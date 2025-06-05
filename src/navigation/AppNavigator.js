@@ -1,15 +1,54 @@
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
 import { auth } from '../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import Toast from 'react-native-toast-message';
 
+// Screens
 import SignupScreen from '../views/SignupScreen';
 import LoginScreen from '../views/LoginScreen';
 import VerificationScreen from '../views/VerificationScreen';
 import HomeScreen from '../views/HomeScreen';
+import TransferScreen from '../views/TransferScreen';
+import TransferSuccessScreen from '../views/TransferSuccessScreen';
+import TransactionScreen from '../views/TransactionScreen';
+import QRScreen from '../views/QRScreen';
+import ProfileScreen from '../views/ProfileScreen';
+import CardsScreen from '../views/CardsScreen';
+import ChangePasswordScreen from '../views/ChangePasswordScreen';
+import ContactSupportScreen from '../views/ContactSupportScreen';
+import ForgotPasswordScreen from '../views/ForgotPasswordScreen';
 
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
+
+function MainTabs() {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarIcon: ({ color, size }) => {
+          let iconName;
+          if (route.name === 'Ana Sayfa') iconName = 'home-outline';
+          else if (route.name === 'Kartlar') iconName = 'card-outline';
+          else if (route.name === 'QR') iconName = 'qr-code-outline';
+          else if (route.name === 'Hesabım') iconName = 'person-outline';
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: '#2c2c97',
+        tabBarInactiveTintColor: 'gray'
+      })}
+    >
+      <Tab.Screen name="Ana Sayfa" component={HomeScreen} />
+      <Tab.Screen name="Kartlar" component={CardsScreen} />
+      <Tab.Screen name="QR" component={QRScreen} />
+      <Tab.Screen name="Hesabım" component={ProfileScreen} />
+    </Tab.Navigator>
+  );
+}
 
 export default function AppNavigator() {
   const [initialRoute, setInitialRoute] = useState(null);
@@ -18,41 +57,37 @@ export default function AppNavigator() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         if (user.emailVerified) {
-          setInitialRoute('Home');
+          setInitialRoute('Main');
         } else {
           setInitialRoute('Verification');
         }
       } else {
-        // Eğer kullanıcı yoksa -> Signup ekranı
-        setInitialRoute('Signup'); // veya Login
+        setInitialRoute('Signup');
       }
     });
 
     return unsubscribe;
   }, []);
 
-  if (!initialRoute) {
-    return null; // veya splash screen
-  }
+  if (!initialRoute) return null;
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={initialRoute}>
-        <Stack.Screen name="Signup" component={SignupScreen} options={{ title: 'Kayıt Ol' }} />
-        <Stack.Screen name="Login" component={LoginScreen} options={{ title: 'Giriş Yap' }} />
-        <Stack.Screen name="Verification" component={VerificationScreen} options={{ title: 'Doğrulama' }} />
-        <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Ana Sayfa' }} />
+      <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Signup" component={SignupScreen} />
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Verification" component={VerificationScreen} />
+        <Stack.Screen name="Main" component={MainTabs} />
+        <Stack.Screen name="Transfer" component={TransferScreen} />
+        <Stack.Screen name="TransferSuccess" component={TransferSuccessScreen} />
+        <Stack.Screen name="Transaction" component={TransactionScreen} />
+        <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+        <Stack.Screen name="ContactSupport" component={ContactSupportScreen} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
       </Stack.Navigator>
+
+      {/* ✅ Toast Mesaj Bileşeni */}
+      <Toast />
     </NavigationContainer>
   );
 }
-
-
-
-
-
-
-
-
-
-

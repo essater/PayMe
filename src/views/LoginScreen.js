@@ -1,5 +1,3 @@
-// src/views/LoginScreen.js
-
 import React, { useState } from 'react';
 import {
   View,
@@ -12,15 +10,12 @@ import {
   Platform
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-
-// Firebase v9 API’leri:
 import { auth } from '../services/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 
 export default function LoginScreen() {
   const navigation = useNavigation();
 
-  // Form durumları:
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -28,20 +23,16 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      // 1) signInWithEmailAndPassword ile giriş yap:
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 2) E‐posta doğrulaması tamamlandı mı kontrolü:
       if (user.emailVerified) {
-        // Doğrulandı → Home’a yönlendir
         navigation.reset({
           index: 0,
-          routes: [{ name: 'Home' }],
+          routes: [{ name: 'Main' }],
         });
       } else {
-        // Doğrulanmadıysa kullanıcıya uyarı ver:
-        Alert.alert("Uyarı", "Lütfen önce e‐postanızı doğrulayın.");
+        Alert.alert("Uyarı", "Lütfen e‐posta adresinizi doğrulayın.");
       }
     } catch (error) {
       console.log("❌ Login Hatası:", error.code, error.message);
@@ -73,7 +64,7 @@ export default function LoginScreen() {
       />
 
       <TouchableOpacity
-        style={[styles.button, { marginBottom: 10 }]}
+        style={styles.button}
         onPress={handleLogin}
         disabled={loading}
       >
@@ -84,9 +75,13 @@ export default function LoginScreen() {
         )}
       </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={() => navigation.navigate('Signup')}
-      >
+      {/* Şifreni mi unuttun? */}
+      <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+        <Text style={styles.forgotText}>Şifreni mi unuttun?</Text>
+      </TouchableOpacity>
+
+      {/* Kayıt Ol */}
+      <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
         <Text style={styles.linkText}>Hesabın yok mu? Kayıt Ol</Text>
       </TouchableOpacity>
     </View>
@@ -94,10 +89,11 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container:  { flex: 1, justifyContent: 'center', padding: 20 },
+  container:  { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: '#fff' },
   header:     { fontSize: 24, textAlign: 'center', marginBottom: 30, fontWeight: 'bold' },
   input:      { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, marginBottom: 15 },
   button:     { backgroundColor: '#2c2c97', padding: 15, borderRadius: 8 },
   buttonText: { color: 'white', textAlign: 'center', fontWeight: 'bold' },
-  linkText:   { color: '#2c2c97', textAlign: 'center', marginTop: 10 }
+  forgotText: { color: '#2c2c97', textAlign: 'center', marginTop: 12 },
+  linkText:   { color: '#2c2c97', textAlign: 'center', marginTop: 6 }
 });

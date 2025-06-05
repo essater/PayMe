@@ -3,11 +3,7 @@
 import { auth, firestore } from '../services/firebase';
 import {
   createUserWithEmailAndPassword,
-  sendEmailVerification,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  reload
+  sendEmailVerification
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import CardModel from '../models/CardModel';
@@ -17,39 +13,51 @@ import {
   generateRandomCvv,
   generateExpiryDateFromNowPlusFiveYears
 } from '../utils/cardGenerators';
-
+// ─── IBAN üretici fonksiyonunu import edelim ───
+import { generateRandomTurkishIban } from '../utils/ibanGenerator';
 
 export const AuthViewModel = {
   async signUpUser({ name, surname, email, birth, password }) {
     try {
-      // ➊ Kullanıcıyı Auth’a ekle
+      // 1) Auth’a kullanıcı ekle
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      const uid = user.uid;
+      const uid  = user.uid;
 
-      // ➋ E-posta doğrulama
+      // 2) E-posta doğrulama bağlantısı
       await sendEmailVerification(user);
 
-      // ➌ Kullanıcı bilgilerini hazırla
-      const userData = { name, surname, email, birth };
-
-      // ➍ Kart bilgileri üretimi (tam 5 yıl sonrası expiry)
-      const cardNumberInfo = generateRandomCardNumber();                     // 16 haneli kart numarası
-      const expiryInfo     = generateExpiryDateFromNowPlusFiveYears();       // 5 yıl sonrası
-      const cvvInfo        = generateRandomCvv();                            // 3 haneli CVV
-
-      const cardData = {
+      // 3) Kart bilgisi üret
+      const cardNumberInfo = generateRandomCardNumber();
+      const expiryInfo     = generateExpiryDateFromNowPlusFiveYears();
+      const cvvInfo        = generateRandomCvv();
+      const cardData       = new CardModel({
         cardNumber:  cardNumberInfo,
         expiryMonth: expiryInfo.month,
         expiryYear:  expiryInfo.year,
         cvv:         cvvInfo,
         balance:     0
-      };
+      });
 
-      // ➎ Firestore’a hem kullanıcı hem de kart bilgilerini kaydet
+      // 4) Rastgele TR IBAN üretiyoruz: artık { raw, formatted } objesi döner
+      const ibanObj = generateRandomTurkishIban();
+      // Raw IBAN (boşluksuz) string’ini al
+      const rawIban = ibanObj.raw;
+
+      // 5) Firestore’a yaz (yalnızca raw IBAN saklanacak)
       await setDoc(doc(firestore, "users", uid), {
-        ...userData,
-        card: cardData
+        name:    name,
+        surname: surname,
+        email:   email,
+        birth:   birth,
+        card: {
+          cardNumber:  cardData.cardNumber,
+          expiryMonth: cardData.expiryMonth,
+          expiryYear:  cardData.expiryYear,
+          cvv:         cardData.cvv,
+          balance:     cardData.balance
+        },
+        iban: rawIban   // ← Burada sadece raw string’i kaydediyoruz
       });
 
       return { success: true, userUid: uid };
@@ -57,39 +65,6 @@ export const AuthViewModel = {
       console.error("❌ AuthViewModel.signUpUser Hatası:", error);
       return { success: false, error };
     }
-  },
-
-  
-  async signInUser({ email, password }) {
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      return { success: true, user: userCredential.user };
-    } catch (error) {
-      return { success: false, error };
-    }
-  },
-
-  async checkVerificationStatus() {
-    try {
-      await reload(auth.currentUser);
-      const user = auth.currentUser;
-      return { verified: user.emailVerified };
-    } catch (error) {
-      return { success: false, error };
-    }
-  },
-
-  async signOutUser() {
-    try {
-      await signOut(auth);
-      return { success: true };
-    } catch (error) {
-      return { success: false, error };
-    }
-  },
-
-  onAuthStateChangedListener(callback) {
-    return onAuthStateChanged(auth, callback);
   },
 
   async getUserData(uid) {
