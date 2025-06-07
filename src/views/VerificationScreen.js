@@ -6,7 +6,8 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
-  Platform
+  ScrollView,
+  SafeAreaView
 } from 'react-native';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
@@ -39,7 +40,7 @@ export default function VerificationScreen() {
       Alert.alert("Tebrikler", "Hesabınız onaylandı! Ana sayfaya yönlendiriliyorsunuz.");
       navigation.reset({
         index: 0,
-        routes: [{ name: 'Home' }],
+        routes: [{ name: 'Main' }],
       });
     } else {
       Alert.alert("Beklemede", "E‐posta henüz doğrulanmamış. Lütfen e‐postanızı kontrol edin.");
@@ -49,41 +50,79 @@ export default function VerificationScreen() {
   };
 
   return (
-    <View style={[styles.container, Platform.OS === 'android' && { paddingTop: 50 }]}>
-      <Text style={styles.header}>Hesabınızı Doğrulayın</Text>
-      <Text style={styles.infoText}>
-        Kayıt sırasında verdiğiniz e‐posta adresine bir doğrulama bağlantısı gönderildi.
-        Lütfen e‐postanızı açıp linke tıklayın. Ardından aşağıdaki butona basarak onay durumunu kontrol edebilirsiniz.
-      </Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.container}>
+          <Text style={styles.header}>Hesabınızı Doğrulayın</Text>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleCheckVerification}
-        disabled={verifying}
-      >
-        {verifying ? (
-          <ActivityIndicator color="white" />
-        ) : (
-          <Text style={styles.buttonText}>
-            {isVerified ? "Ana Sayfaya Git" : "Doğrulama Durumunu Kontrol Et"}
+          <Text style={styles.infoText}>
+            Kayıt sırasında verdiğiniz e‐posta adresine bir doğrulama bağlantısı gönderildi.
+            Lütfen e‐postanızı açıp linke tıklayın. Ardından aşağıdaki butona basarak onay durumunu kontrol edebilirsiniz.
           </Text>
-        )}
-      </TouchableOpacity>
 
-      {isVerified && (
-        <Text style={styles.successText}>
-          ✔️ Hesabınız onaylandı! Ana sayfaya yönlendiriliyorsunuz...
-        </Text>
-      )}
-    </View>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleCheckVerification}
+            disabled={verifying}
+          >
+            {verifying ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text style={styles.buttonText}>
+                {isVerified ? "Ana Sayfaya Git" : "Doğrulama Durumunu Kontrol Et"}
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          {isVerified && (
+            <Text style={styles.successText}>
+              ✔️ Hesabınız onaylandı! Ana sayfaya yönlendiriliyorsunuz...
+            </Text>
+          )}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container:    { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-  header:       { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-  infoText:     { fontSize: 16, textAlign: 'center', marginBottom: 30, color: '#333' },
-  button:       { backgroundColor: '#2c2c97', padding: 15, borderRadius: 8, marginBottom: 15, width: '100%' },
-  buttonText:   { color: 'white', fontSize: 16, textAlign: 'center', fontWeight: 'bold' },
-  successText:  { fontSize: 16, color: 'green', marginTop: 10, textAlign: 'center' }
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 20
+  },
+  container: {
+    alignItems: 'center'
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center'
+  },
+  infoText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 30,
+    color: '#333'
+  },
+  button: {
+    backgroundColor: '#2c2c97',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 15,
+    width: '100%'
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    textAlign: 'center',
+    fontWeight: 'bold'
+  },
+  successText: {
+    fontSize: 16,
+    color: 'green',
+    marginTop: 10,
+    textAlign: 'center'
+  }
 });

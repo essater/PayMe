@@ -8,7 +8,8 @@ import {
   ActivityIndicator,
   FlatList,
   TouchableOpacity,
-  Modal
+  Modal,
+  SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { firestore, auth } from '../services/firebase';
@@ -44,6 +45,7 @@ export default function TransactionScreen({ navigation }) {
     if (selectedRange === '1m') startDate.setMonth(now.getMonth() - 1);
     else if (selectedRange === '3m') startDate.setMonth(now.getMonth() - 3);
     else if (selectedRange === '6m') startDate.setMonth(now.getMonth() - 6);
+    else startDate = new Date(0);
 
     const transfersRef = collection(firestore, 'transfers');
     const q = query(
@@ -57,6 +59,9 @@ export default function TransactionScreen({ navigation }) {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setTransfers(data);
       setLoading(false);
+    }, (error) => {
+      console.error("Transaction dinleme hatası:", error);
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -67,8 +72,10 @@ export default function TransactionScreen({ navigation }) {
     const formattedDate = dateObj.toLocaleDateString('tr-TR');
     return (
       <View style={styles.transferCard}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={styles.transferDescription}>{item.reason || 'İşlem'} - {item.note || ''}</Text>
+        <View style={styles.transferRow}>
+          <Text style={styles.transferDescription}>
+            {item.reason || 'İşlem'}{item.note ? ` - ${item.note}` : ''}
+          </Text>
           <Text style={styles.transferAmount}>- {item.amount.toFixed(2)} ₺</Text>
         </View>
         <Text style={styles.transferDate}>{formattedDate}</Text>
@@ -84,18 +91,15 @@ export default function TransactionScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#1F2937" />
         </TouchableOpacity>
         <Text style={styles.headerText}>Tüm İşlemler</Text>
       </View>
 
-      <TouchableOpacity
-        style={styles.rangeSelector}
-        onPress={() => setShowRangeModal(true)}
-      >
+      <TouchableOpacity style={styles.rangeSelector} onPress={() => setShowRangeModal(true)}>
         <Text style={styles.rangeSelectorText}>{renderRangeLabel()}</Text>
         <Ionicons name="chevron-down" size={20} color="#333" />
       </TouchableOpacity>
@@ -125,7 +129,7 @@ export default function TransactionScreen({ navigation }) {
       </Modal>
 
       {loading ? (
-        <ActivityIndicator size="large" color="#2c2c97" style={{ marginTop: 20 }} />
+        <ActivityIndicator size="large" color="#2c2c97" style={styles.loadingIndicator} />
       ) : transfers.length === 0 ? (
         <Text style={styles.noHistoryText}>Belirtilen aralıkta transfer bulunamadı.</Text>
       ) : (
@@ -133,10 +137,11 @@ export default function TransactionScreen({ navigation }) {
           data={transfers}
           keyExtractor={(item) => item.id}
           renderItem={renderTransferItem}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={styles.flatListContent}
+          keyboardShouldPersistTaps="handled"
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -145,49 +150,22 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderColor: '#ddd'
   },
-  headerText: { fontSize: 18, fontWeight: 'bold', marginLeft: 12 },
-  noHistoryText: {
-    marginTop: 20,
-    alignSelf: 'center',
-    fontSize: 14,
-    color: '#666'
+  backButton: {
+    paddingRight: 12
   },
-  transferCard: {
-    backgroundColor: '#fff',
-    marginHorizontal: 20,
-    marginBottom: 12,
-    borderRadius: 8,
-    padding: 15,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2
-  },
-  transferDescription: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333'
-  },
-  transferAmount: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#d32f2f'
-  },
-  transferDate: {
-    marginTop: 6,
-    fontSize: 12,
-    color: '#888'
-  },
+  headerText: { fontSize: 18, fontWeight: 'bold', marginLeft: 4, flexShrink: 1 },
   rangeSelector: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    margin: 16,
+    marginHorizontal: 16,
+    marginVertical: 10,
     paddingVertical: 8,
     paddingHorizontal: 12,
     backgroundColor: '#e0e0e0',
@@ -235,5 +213,49 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#007AFF',
     fontWeight: '600'
+  },
+  loadingIndicator: {
+    marginTop: 20
+  },
+  noHistoryText: {
+    marginTop: 20,
+    alignSelf: 'center',
+    fontSize: 14,
+    color: '#666'
+  },
+  transferCard: {
+    backgroundColor: '#fff',
+    marginHorizontal: 20,
+    marginBottom: 12,
+    borderRadius: 8,
+    padding: 15,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2
+  },
+  transferRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  },
+  transferDescription: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+    flexShrink: 1
+  },
+  transferAmount: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#d32f2f',
+    marginLeft: 10
+  },
+  transferDate: {
+    marginTop: 6,
+    fontSize: 12,
+    color: '#888'
+  },
+  flatListContent: {
+    paddingBottom: 20
   }
 });

@@ -1,3 +1,5 @@
+// src/navigation/AppNavigator.js
+
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -6,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { auth } from '../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import Toast from 'react-native-toast-message';
+import { View, Text } from 'react-native';
 
 // Screens
 import SignupScreen from '../views/SignupScreen';
@@ -24,6 +27,44 @@ import ForgotPasswordScreen from '../views/ForgotPasswordScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+
+// Özel Toast Bileşeni
+const toastConfig = {
+  success: ({ text1, text2 }) => (
+    <View style={{
+      height: 60,
+      width: '90%',
+      backgroundColor: '#2c2c97',
+      borderRadius: 10,
+      paddingHorizontal: 16,
+      justifyContent: 'center',
+      shadowColor: '#000',
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+      alignSelf: 'center'
+    }}>
+      <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16 }}>{text1}</Text>
+      {text2 ? <Text style={{ color: 'white', fontSize: 13 }}>{text2}</Text> : null}
+    </View>
+  ),
+  error: ({ text1, text2 }) => (
+    <View style={{
+      height: 60,
+      width: '90%',
+      backgroundColor: '#d32f2f',
+      borderRadius: 10,
+      paddingHorizontal: 16,
+      justifyContent: 'center',
+      shadowColor: '#000',
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+      alignSelf: 'center'
+    }}>
+      <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16 }}>{text1}</Text>
+      {text2 ? <Text style={{ color: 'white', fontSize: 13 }}>{text2}</Text> : null}
+    </View>
+  )
+};
 
 function MainTabs() {
   return (
@@ -84,10 +125,11 @@ export default function AppNavigator() {
         <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
         <Stack.Screen name="ContactSupport" component={ContactSupportScreen} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+        <Stack.Screen name="QRScreen" component={QRScreen} />
       </Stack.Navigator>
 
-      {/* ✅ Toast Mesaj Bileşeni */}
-      <Toast />
+      {/* ✅ Toast bileşeni (özelleştirilmiş konum ve stil ile) */}
+      <Toast config={toastConfig} position="top" topOffset={60} />
     </NavigationContainer>
   );
 }

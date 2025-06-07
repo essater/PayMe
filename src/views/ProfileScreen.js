@@ -4,16 +4,18 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Alert
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { auth } from '../services/firebase';
 import ProfileViewModel from '../viewmodels/ProfileViewModel';
+import { capitalizeTR } from '../utils/formatters';
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
-  const { userData } = ProfileViewModel();
+  const { userData, loading } = ProfileViewModel();
 
   const handleLogout = () => {
     auth.signOut()
@@ -33,11 +35,29 @@ export default function ProfileScreen() {
     navigation.navigate('ContactSupport');
   };
 
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <ActivityIndicator size="large" color="#2c2c97" />
+      </View>
+    );
+  }
+
+  if (!userData) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <Text>Kullanıcı verisi yüklenemedi.</Text>
+      </View>
+    );
+  }
+
+  const fullName = `${capitalizeTR(userData.name)} ${capitalizeTR(userData.surname)}`;
+
   return (
     <View style={styles.container}>
       <View style={styles.headerBox}>
         <Ionicons name="person-circle-outline" size={80} color="#1F2937" />
-        <Text style={styles.nameText}>{userData?.name} {userData?.surname}</Text>
+        <Text style={styles.nameText}>{fullName}</Text>
         <Text style={styles.emailText}>{auth.currentUser?.email}</Text>
       </View>
 
@@ -63,6 +83,7 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB', paddingTop: 80 },
+  centered: { justifyContent: 'center', alignItems: 'center' },
   headerBox: { alignItems: 'center', marginBottom: 30 },
   nameText: { fontSize: 20, fontWeight: 'bold', color: '#1F2937' },
   emailText: { fontSize: 14, color: '#6B7280', marginTop: 4 },

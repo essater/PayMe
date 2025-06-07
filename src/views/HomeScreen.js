@@ -1,5 +1,3 @@
-// src/views/HomeScreen.js
-
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -8,19 +6,20 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Alert,
-  FlatList
+  FlatList,
+  SafeAreaView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { auth } from '../services/firebase';
-import { AuthViewModel } from '../viewmodels/AuthViewModel';
-import Clipboard from '@react-native-clipboard/clipboard';
-import { firestore } from '../services/firebase';
+import { auth, firestore } from '../services/firebase';
+import * as Clipboard from 'expo-clipboard';
 import {
   collection,
   query,
   orderBy,
-  onSnapshot
+  onSnapshot,
+  doc
 } from 'firebase/firestore';
+import { capitalizeTR } from '../utils/formatters';
 
 export default function HomeScreen({ navigation }) {
   const [userData, setUserData] = useState(null);
@@ -28,6 +27,7 @@ export default function HomeScreen({ navigation }) {
   const [personalTxns, setPersonalTxns] = useState([]);
   const [loadingTxns, setLoadingTxns] = useState(true);
 
+  // 🔁 Realtime dinleme ile kullanıcı verisini al
   useEffect(() => {
     const currentUser = auth.currentUser;
     if (!currentUser) {
@@ -35,16 +35,18 @@ export default function HomeScreen({ navigation }) {
       return;
     }
 
-    AuthViewModel.getUserData(currentUser.uid)
-      .then((result) => {
-        if (result.success) {
-          setUserData(result.data);
-        } else {
-          console.error('❌ Kullanıcı verisi alınamadı:', result.error);
-          Alert.alert('Hata', 'Kullanıcı verisi yüklenemedi.');
-        }
-      })
-      .finally(() => setLoadingUser(false));
+    const userRef = doc(firestore, 'users', currentUser.uid);
+    const unsubscribe = onSnapshot(userRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setUserData(docSnap.data());
+        setLoadingUser(false);
+      } else {
+        Alert.alert('Hata', 'Kullanıcı verisi bulunamadı.');
+        setLoadingUser(false);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -61,8 +63,7 @@ export default function HomeScreen({ navigation }) {
       });
       setPersonalTxns(list);
       setLoadingTxns(false);
-    }, (error) => {
-      console.error("❌ Transaction dinleme hatası:", error);
+    }, () => {
       setLoadingTxns(false);
     });
 
@@ -85,22 +86,12 @@ export default function HomeScreen({ navigation }) {
     );
   }
 
-  const { card, iban: rawIban } = userData;
+  const { card, iban: rawIban, name } = userData;
   const formattedIban = rawIban.replace(/(.{4})/g, '$1 ').trim();
 
-  const copyIbanToClipboard = () => {
-    Clipboard.setString(rawIban);
+  const copyIbanToClipboard = async () => {
+    await Clipboard.setStringAsync(rawIban);
     Alert.alert('Kopyalandı', 'IBAN panoya kopyalandı.');
-  };
-
-  const handleLogout = async () => {
-    try {
-      await auth.signOut();
-      navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
-    } catch (error) {
-      console.error('❌ Çıkış Yap Hatası:', error);
-      Alert.alert('Hata', 'Çıkış yapılamadı. Lütfen tekrar deneyin.');
-    }
   };
 
   const renderTransferItem = ({ item }) => {
@@ -118,7 +109,9 @@ export default function HomeScreen({ navigation }) {
       <View style={styles.transferCard}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text style={styles.transferDescription}>{desc}</Text>
-          <Text style={[styles.transferAmount, { color: isOutgoing ? '#d32f2f' : '#388e3c' }]}> {isOutgoing ? '-' : '+'} {item.amount.toFixed(2)} ₺</Text>
+          <Text style={[styles.transferAmount, { color: isOutgoing ? '#d32f2f' : '#388e3c' }]}>
+            {isOutgoing ? '-' : '+'} {item.amount.toFixed(2)} ₺
+          </Text>
         </View>
         <Text style={styles.transferDate}>{formattedDate}</Text>
       </View>
@@ -126,12 +119,8 @@ export default function HomeScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.topBar}>
-        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-          <Text style={styles.logoutText}>Çıkış Yap</Text>
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.welcome}>Hoş geldin, {capitalizeTR(name)}</Text>
 
       <View style={styles.cardContainer}>
         <Text style={styles.cardNumber}>{card.cardNumber}</Text>
@@ -148,12 +137,12 @@ export default function HomeScreen({ navigation }) {
       <View style={styles.ibanContainer}>
         <Text style={styles.ibanLabel}>IBAN:</Text>
         <Text style={styles.ibanValue}>{formattedIban}</Text>
-        <TouchableOpacity style={styles.copyButton} onPress={copyIbanToClipboard}>
-          <Text style={styles.copyText}>Kopyala</Text>
+        <TouchableOpacity onPress={copyIbanToClipboard}>
+          <Ionicons name="copy-outline" size={20} color="#2c2c97" />
         </TouchableOpacity>
       </View>
 
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: 20, marginBottom: 20 }}>
+      <View style={styles.buttonsRow}>
         <TouchableOpacity
           style={[styles.transferButton, { flex: 1, marginRight: 8 }]}
           onPress={() => navigation.navigate('Transfer')}
@@ -162,10 +151,18 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={{ backgroundColor: 'transparent', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 8 }}
+          style={[styles.transferButton, { flex: 1, marginLeft: 8 }]}
+          onPress={() => navigation.navigate('AddMoney')}
+        >
+          <Text style={styles.transferButtonText}>Para Ekle</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.historyIconButton}
           onPress={() => navigation.navigate('Transaction')}
         >
-          <Ionicons name="time-outline" size={28} color="#2c2c97" />
+          <Ionicons name="time-outline" size={24} color="#2c2c97" />
+          <Text style={styles.historyText}>Geçmiş</Text>
         </TouchableOpacity>
       </View>
 
@@ -185,31 +182,19 @@ export default function HomeScreen({ navigation }) {
           contentContainerStyle={{ paddingBottom: 20 }}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f2f2f2' },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    padding: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderColor: '#ddd'
-  },
-  logoutButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: '#d32f2f',
-    borderRadius: 6
-  },
-  logoutText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: 'bold'
+  welcome: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 20,
+    marginHorizontal: 20,
+    color: '#2c2c97'
   },
   cardContainer: {
     backgroundColor: '#1e1e7e',
@@ -255,7 +240,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 12,
     marginHorizontal: 20,
-    marginBottom: 15
+    marginBottom: 15,
+    gap: 8
   },
   ibanLabel: {
     fontSize: 14,
@@ -267,22 +253,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333'
   },
-  copyButton: {
-    backgroundColor: '#2c2c97',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 6,
+  buttonsRow: {
     flexDirection: 'row',
-    alignItems: 'center'
-  },
-  copyText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold'
-  },
-  transferButton: {
     marginHorizontal: 20,
     marginBottom: 20,
+    alignItems: 'center',
+  },
+  transferButton: {
     backgroundColor: '#2c2c97',
     paddingVertical: 12,
     borderRadius: 8,
@@ -292,6 +269,18 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold'
+  },
+  historyIconButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 12,
+    paddingVertical: 8,
+  },
+  historyText: {
+    color: '#2c2c97',
+    fontSize: 14,
+    marginLeft: 6,
+    fontWeight: '600',
   },
   historyHeader: {
     marginHorizontal: 20,

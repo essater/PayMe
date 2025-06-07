@@ -15,7 +15,7 @@ export default function TransferSuccessScreen({ navigation }) {
           // Ana ekrana sıfırlı şekilde dön
           navigation.reset({
             index: 0,
-            routes: [{ name: 'Home' }]
+            routes: [{ name: 'Main' }]
           });
         }}
       >

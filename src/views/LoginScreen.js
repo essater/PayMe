@@ -1,3 +1,5 @@
+// src/views/LoginScreen.js
+
 import React, { useState } from 'react';
 import {
   View,
@@ -5,95 +7,150 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
-  ActivityIndicator,
+  KeyboardAvoidingView,
   Platform
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { auth } from '../services/firebase';
+import { Ionicons } from '@expo/vector-icons';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../services/firebase';
+import Toast from 'react-native-toast-message';
+import { isValidEmail } from '../utils/validators';
 
-export default function LoginScreen() {
-  const navigation = useNavigation();
-
+export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [secureEntry, setSecureEntry] = useState(true);
 
   const handleLogin = async () => {
-    setLoading(true);
+    if (!email || !password) {
+      Toast.show({ type: 'error', text1: 'Tüm alanları doldurun.' });
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      Toast.show({ type: 'error', text1: 'Geçerli bir e-posta girin.' });
+      return;
+    }
+
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      if (user.emailVerified) {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Main' }],
-        });
-      } else {
-        Alert.alert("Uyarı", "Lütfen e‐posta adresinizi doğrulayın.");
+      if (!user.emailVerified) {
+        Toast.show({ type: 'error', text1: 'E-posta doğrulaması gerekli.' });
+        return;
       }
+
+      navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
     } catch (error) {
-      console.log("❌ Login Hatası:", error.code, error.message);
-      Alert.alert("Giriş Hatası", error.message);
-    } finally {
-      setLoading(false);
+      Toast.show({ type: 'error', text1: 'Giriş bilgileri hatalı.' });
     }
   };
 
   return (
-    <View style={[styles.container, Platform.OS === 'android' && { paddingTop: 50 }]}>
-      <Text style={styles.header}>Giriş Yap</Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      style={styles.container}
+    >
+      <Text style={styles.title}>Giriş Yap</Text>
 
       <TextInput
         style={styles.input}
-        placeholder="E‐posta Adresi"
-        keyboardType="email-address"
+        placeholder="E-posta"
+        placeholderTextColor="#aaa"
         autoCapitalize="none"
         value={email}
         onChangeText={setEmail}
+        keyboardType="email-address"
       />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Şifre"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+      <View style={styles.passwordContainer}>
+        <TextInput
+          style={styles.inputPassword}
+          placeholder="Şifre"
+          placeholderTextColor="#aaa"
+          secureTextEntry={secureEntry}
+          value={password}
+          onChangeText={setPassword}
+        />
+        <TouchableOpacity onPress={() => setSecureEntry(!secureEntry)}>
+          <Ionicons
+            name={secureEntry ? 'eye-off-outline' : 'eye-outline'}
+            size={24}
+            color="#666"
+          />
+        </TouchableOpacity>
+      </View>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleLogin}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="white" />
-        ) : (
-          <Text style={styles.buttonText}>Giriş Yap</Text>
-        )}
+      <TouchableOpacity onPress={handleLogin} style={styles.button}>
+        <Text style={styles.buttonText}>Giriş Yap</Text>
       </TouchableOpacity>
 
-      {/* Şifreni mi unuttun? */}
       <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
-        <Text style={styles.forgotText}>Şifreni mi unuttun?</Text>
+        <Text style={styles.linkText}>Şifrenizi mi unuttunuz?</Text>
       </TouchableOpacity>
 
-      {/* Kayıt Ol */}
       <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-        <Text style={styles.linkText}>Hesabın yok mu? Kayıt Ol</Text>
+        <Text style={[styles.linkText, { marginTop: 12 }]}>
+          Hesabınız yok mu? Kayıt olun.
+        </Text>
       </TouchableOpacity>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container:  { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: '#fff' },
-  header:     { fontSize: 24, textAlign: 'center', marginBottom: 30, fontWeight: 'bold' },
-  input:      { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, marginBottom: 15 },
-  button:     { backgroundColor: '#2c2c97', padding: 15, borderRadius: 8 },
-  buttonText: { color: 'white', textAlign: 'center', fontWeight: 'bold' },
-  forgotText: { color: '#2c2c97', textAlign: 'center', marginTop: 12 },
-  linkText:   { color: '#2c2c97', textAlign: 'center', marginTop: 6 }
+  container: {
+    flex: 1,
+    backgroundColor: '#f2f2f2',
+    justifyContent: 'center',
+    paddingHorizontal: 30
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#2c2c97',
+    marginBottom: 30,
+    textAlign: 'center'
+  },
+  input: {
+    height: 48,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    backgroundColor: 'white',
+    marginBottom: 15
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    backgroundColor: 'white',
+    marginBottom: 20
+  },
+  inputPassword: {
+    flex: 1,
+    height: 48
+  },
+  button: {
+    backgroundColor: '#2c2c97',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 20
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16
+  },
+  linkText: {
+    color: '#2c2c97',
+    textAlign: 'center',
+    fontSize: 14
+  }
 });

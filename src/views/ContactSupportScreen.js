@@ -78,25 +78,45 @@ export default function ContactSupportScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, padding: 20, backgroundColor: '#fff'
+    flex: 1,
+    padding: 20,
+    paddingTop: 110,   // Geri butonun yüksekliği ve üst boşluk için yeterli alan
+    backgroundColor: '#fff'
   },
   backButton: {
-    marginBottom: 10
+    position: 'absolute',
+    top: 60,    // Geri buton biraz daha yukarda olabilir, ayarlayabilirsin
+    left: 20,
+    zIndex: 10,
   },
   header: {
-    fontSize: 24, fontWeight: 'bold', marginBottom: 10
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    marginTop: 10   // İçerik üst başlığı biraz boşluk bıraksın
   },
   subText: {
-    fontSize: 14, color: '#555', marginBottom: 20
+    fontSize: 14,
+    color: '#555',
+    marginBottom: 20
   },
   input: {
-    borderWidth: 1, borderColor: '#ccc', borderRadius: 8,
-    padding: 10, minHeight: 120, backgroundColor: '#f9f9f9', marginBottom: 20
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    minHeight: 120,
+    backgroundColor: '#f9f9f9',
+    marginBottom: 20
   },
   button: {
-    backgroundColor: '#2c2c97', padding: 15, borderRadius: 8
+    backgroundColor: '#2c2c97',
+    padding: 15,
+    borderRadius: 8
   },
   buttonText: {
-    color: '#fff', textAlign: 'center', fontWeight: 'bold'
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: 'bold'
   }
 });

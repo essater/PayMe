@@ -6,13 +6,13 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   StyleSheet,
 } from 'react-native';
 import { auth } from '../services/firebase';
 import { reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import Toast from 'react-native-toast-message';
 
 export default function ChangePasswordScreen() {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -22,19 +22,19 @@ export default function ChangePasswordScreen() {
 
   const handleChangePassword = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
-      Alert.alert('Hata', 'Lütfen tüm alanları doldurun.');
+      Toast.show({ type: 'error', text1: 'Lütfen tüm alanları doldurun.' });
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      Alert.alert('Hata', 'Yeni şifreler eşleşmiyor.');
+      Toast.show({ type: 'error', text1: 'Yeni şifreler eşleşmiyor.' });
       return;
     }
 
     const user = auth.currentUser;
 
     if (!user || !user.email) {
-      Alert.alert('Hata', 'Kullanıcı doğrulanamadı.');
+      Toast.show({ type: 'error', text1: 'Kullanıcı doğrulanamadı.' });
       return;
     }
 
@@ -43,11 +43,11 @@ export default function ChangePasswordScreen() {
     try {
       await reauthenticateWithCredential(user, credential);
       await updatePassword(user, newPassword);
-      Alert.alert('Başarılı', 'Şifreniz başarıyla güncellendi.');
+      Toast.show({ type: 'success', text1: 'Şifreniz başarıyla güncellendi.' });
       navigation.goBack();
     } catch (error) {
       console.error('Şifre güncelleme hatası:', error);
-      Alert.alert('Hata', error.message || 'Bir hata oluştu.');
+      Toast.show({ type: 'error', text1: error.message || 'Bir hata oluştu.' });
     }
   };
 
@@ -123,7 +123,8 @@ const styles = StyleSheet.create({
   },
   backButton: {
     position: 'absolute',
-    top: 40,
+    top: 60,
     left: 20,
+    zIndex: 10,
   },
 });

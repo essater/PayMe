@@ -13,7 +13,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.essat.PayMe",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -22,6 +26,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.essat.PayMe"
+    
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -30,6 +35,14 @@
       "eas": {
         "projectId": "3b761c86-85fb-4ad1-bc21-f1b2947970e7"
       }
-    }
+    },
+    "plugins": [
+      [
+        "expo-barcode-scanner",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access camera."
+        }
+      ]
+    ]
   }
 }
