@@ -24,11 +24,12 @@ import CardsScreen from '../views/CardsScreen';
 import ChangePasswordScreen from '../views/ChangePasswordScreen';
 import ContactSupportScreen from '../views/ContactSupportScreen';
 import ForgotPasswordScreen from '../views/ForgotPasswordScreen';
+import NotificationsScreen from '../views/NotificationsScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// Özel Toast Bileşeni
+
 const toastConfig = {
   success: ({ text1, text2 }) => (
     <View style={{
@@ -103,7 +104,7 @@ export default function AppNavigator() {
           setInitialRoute('Verification');
         }
       } else {
-        setInitialRoute('Signup');
+        setInitialRoute('Login');
       }
     });
 
@@ -126,6 +127,7 @@ export default function AppNavigator() {
         <Stack.Screen name="ContactSupport" component={ContactSupportScreen} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
         <Stack.Screen name="QRScreen" component={QRScreen} />
+        <Stack.Screen name="Notifications" component={NotificationsScreen} />
       </Stack.Navigator>
 
       {/* ✅ Toast bileşeni (özelleştirilmiş konum ve stil ile) */}
