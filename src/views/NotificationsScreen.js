@@ -18,8 +18,17 @@ import {
   orderBy,
   onSnapshot,
   deleteDoc,
-  doc
+  doc,
+  setDoc,
+  serverTimestamp,
+  getDocs,
+  writeBatch,
+  updateDoc,
+  where
 } from 'firebase/firestore';
+import { FriendRequestViewModel } from '../viewmodels/FriendRequestViewModel';
+import { TransferViewModel } from '../viewmodels/TransferViewModel';
+import { AuthViewModel } from '../viewmodels/AuthViewModel';
 
 export default function NotificationsScreen({ navigation }) {
   const [notifications, setNotifications] = useState([]);
@@ -28,57 +37,159 @@ export default function NotificationsScreen({ navigation }) {
     const uid = auth.currentUser.uid;
     const notifRef = collection(firestore, 'users', uid, 'notifications');
     const q = query(notifRef, orderBy('timestamp', 'desc'));
-    const unsub = onSnapshot(q, snap => {
-      setNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-    return unsub;
+    return onSnapshot(q, snap =>
+      setNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+    );
   }, []);
 
-  const deleteNotification = async (id) => {
-    try {
-      const uid = auth.currentUser.uid;
-      await deleteDoc(doc(firestore, 'users', uid, 'notifications', id));
-    } catch (e) {
-      Alert.alert('Hata', 'Bildirim silinirken bir sorun oluştu.');
+  const deleteNotification = async id => {
+    const uid = auth.currentUser.uid;
+    await deleteDoc(doc(firestore, 'users', uid, 'notifications', id));
+  };
+
+  const markAllAsRead = async () => {
+    const uid = auth.currentUser.uid;
+    const notifRef = collection(firestore, 'users', uid, 'notifications');
+    const q = query(notifRef, where('read', '==', false));
+    const snap = await getDocs(q);
+    if (snap.empty) return;
+    const batch = writeBatch(firestore);
+    snap.docs.forEach(d =>
+      batch.update(
+        doc(firestore, 'users', uid, 'notifications', d.id),
+        { read: true }
+      )
+    );
+    await batch.commit();
+  };
+
+  const handleAcceptFriend = note => {
+    FriendRequestViewModel.acceptRequest(note.requestFrom)
+      .then(() => deleteNotification(note.id));
+  };
+
+  const handleRejectFriend = note => {
+    FriendRequestViewModel.rejectRequest(note.requestFrom)
+      .then(() => deleteNotification(note.id));
+  };
+
+  const handleAcceptMoney = async note => {
+    const meUid = auth.currentUser.uid;
+    const meRes = await AuthViewModel.getUserData(meUid);
+    if (!meRes.success) {
+      deleteNotification(note.id);
+      return;
     }
+    const senderIban = meRes.data.iban;
+    await TransferViewModel.startTransfer({
+      senderIban,
+      recipientIban: note.requestFromIban,
+      recipientName: note.requestFromName,
+      amount: note.amount,
+      reason: 'Para İsteğe Cevap',
+      note: note.note || ''
+    });
+    await deleteNotification(note.id);
+  };
+
+  const handleRejectMoney = async note => {
+    const me = auth.currentUser;
+    const notifId = `money_req_rej_${me.uid}_${Date.now()}`;
+    await setDoc(
+      doc(firestore, 'users', note.requestFrom, 'notifications', notifId),
+      {
+        title:        'Para İsteği Reddedildi',
+        body:         `${note.requestFromName}, talebiniz reddedildi.`,
+        type:         'money_request_rejected',
+        timestamp:    serverTimestamp(),
+        read:         false
+      }
+    );
+    await deleteNotification(note.id);
   };
 
   const clearAll = () => {
-    Alert.alert(
-      'Tümünü Temizle',
-      'Bütün bildirimleri silmek istediğinize emin misiniz?',
-      [
-        { text: 'İptal', style: 'cancel' },
-        { text: 'Sil', style: 'destructive', onPress: async () => {
-            const uid = auth.currentUser.uid;
-            await Promise.all(
-              notifications.map(n =>
-                deleteDoc(doc(firestore, 'users', uid, 'notifications', n.id))
-              )
-            );
-          }
-        }
-      ]
+    const uid = auth.currentUser.uid;
+    notifications.forEach(n =>
+      deleteDoc(doc(firestore, 'users', uid, 'notifications', n.id))
     );
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <View style={styles.cardHeader}>
-        <Text style={styles.title}>{item.title}</Text>
-        <TouchableOpacity onPress={() => deleteNotification(item.id)}>
-          <Ionicons name="trash-outline" size={20} color="#d32f2f" />
-        </TouchableOpacity>
+  const renderItem = ({ item }) => {
+    if (item.type === 'friend_request') {
+      return (
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.title}>{item.title}</Text>
+            <TouchableOpacity onPress={() => deleteNotification(item.id)}>
+              <Ionicons name="trash-outline" size={20} color="#d32f2f" />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.body}>{item.body}</Text>
+          <View style={styles.buttons}>
+            <TouchableOpacity
+              style={styles.acceptBtn}
+              onPress={() => handleAcceptFriend(item)}
+            >
+              <Text style={styles.acceptText}>Kabul</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.rejectBtn}
+              onPress={() => handleRejectFriend(item)}
+            >
+              <Text style={styles.rejectText}>Reddet</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    }
+
+    if (item.type === 'money_request') {
+      return (
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.title}>{item.title}</Text>
+            <TouchableOpacity onPress={() => deleteNotification(item.id)}>
+              <Ionicons name="trash-outline" size={20} color="#d32f2f" />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.body}>{item.body}</Text>
+          <View style={styles.buttons}>
+            <TouchableOpacity
+              style={styles.acceptBtn}
+              onPress={() => handleAcceptMoney(item)}
+            >
+              <Text style={styles.acceptText}>Gönder</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.rejectBtn}
+              onPress={() => handleRejectMoney(item)}
+            >
+              <Text style={styles.rejectText}>Reddet</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <Text style={styles.title}>{item.title}</Text>
+          <TouchableOpacity onPress={() => deleteNotification(item.id)}>
+            <Ionicons name="trash-outline" size={20} color="#d32f2f" />
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.body}>{item.body}</Text>
+        <Text style={styles.time}>
+          {item.timestamp?.toDate().toLocaleString('tr-TR', {
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+          })}
+        </Text>
       </View>
-      <Text style={styles.body}>{item.body}</Text>
-      <Text style={styles.time}>
-        {item.timestamp?.toDate().toLocaleString('tr-TR', {
-          day: '2-digit', month: '2-digit', year: 'numeric',
-          hour: '2-digit', minute: '2-digit'
-        })}
-      </Text>
-    </View>
-  );
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -87,9 +198,14 @@ export default function NotificationsScreen({ navigation }) {
           <Ionicons name="arrow-back" size={24} color="#1F2937" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Bildirimler</Text>
-        <TouchableOpacity onPress={clearAll}>
-          <Text style={styles.clearAll}>Tümünü Temizle</Text>
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity onPress={markAllAsRead} style={styles.headerBtn}>
+            <Ionicons name="checkmark-done-outline" size={24} color="#2c2c97" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={clearAll} style={styles.headerBtn}>
+            <Text style={styles.clearAll}>Tümünü Temizle</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <FlatList
@@ -110,12 +226,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    padding: 16,
-    justifyContent: 'space-between'
+    padding: 16
   },
-  headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#333' },
+  headerTitle: { flex:1, fontSize: 18, fontWeight: 'bold', color: '#333' },
+  headerActions: { flexDirection: 'row', alignItems: 'center' },
+  headerBtn: { marginLeft: 16 },
   clearAll: { color: '#d32f2f', fontSize: 14 },
-
   list: { padding: 16 },
   separator: { height: 8 },
   emptyText: { textAlign: 'center', marginTop: 20, color: '#666' },
@@ -136,5 +252,26 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 16, fontWeight: '600', color: '#333' },
   body: { fontSize: 14, color: '#555', marginTop: 4 },
-  time: { fontSize: 12, color: '#999', marginTop: 6, textAlign: 'right' }
+  time: { fontSize: 12, color: '#999', marginTop: 6, textAlign: 'right' },
+
+  buttons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 10
+  },
+  acceptBtn: {
+    backgroundColor: '#4caf50',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    marginRight: 8
+  },
+  acceptText: { color: '#fff', fontWeight: '600' },
+  rejectBtn: {
+    backgroundColor: '#f44336',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6
+  },
+  rejectText: { color: '#fff', fontWeight: '600' }
 });

@@ -5,13 +5,16 @@ import { auth, firestore } from './firebase';
 import {
   collection,
   query,
+  where,
   orderBy,
   onSnapshot,
   doc,
   setDoc,
-  serverTimestamp
+  serverTimestamp,
+  getDocs
 } from 'firebase/firestore';
 
+// Lokal bildirim handler’ı
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowBanner: true,
@@ -21,68 +24,57 @@ Notifications.setNotificationHandler({
   }),
 });
 
+// IBAN maskelerken kullanılıyor
 function maskIban(iban) {
   const compact = iban.replace(/\s+/g, '');
   return `${compact.slice(0,4)}****${compact.slice(-4)}`;
 }
 
+/**
+ * 1) Firestore’dan yeni işlemleri dinler,
+ * 2) Yalnızca Firestore’a “transfer” bildirimi yazar.
+ * (Banner scheduling, subscribeToNotifications ile yapılacak.)
+ */
 export function subscribeToIncomingTransactions() {
-  // 1. Lokal bildirim iznini iste
   Notifications.requestPermissionsAsync();
-
   const uid = auth.currentUser?.uid;
   if (!uid) return () => {};
 
-  // 2. Abonelik başlangıç zamanı
   const subscribeTime = Date.now();
+  const txnsRef      = collection(firestore, 'users', uid, 'transactions');
+  const notifCol     = collection(firestore, 'users', uid, 'notifications');
+  const q            = query(txnsRef, orderBy('date', 'desc'));
 
-  const txnsRef  = collection(firestore, 'users', uid, 'transactions');
-  const notifCol = collection(firestore, 'users', uid, 'notifications');
-  const q        = query(txnsRef, orderBy('date', 'desc'));
-
-  let initialized = false;  // artık gerek yok
-  // let initialized = false;
-
+  let initialized = false;
   const unsubscribe = onSnapshot(q, snapshot => {
-   if (!initialized) {
-     initialized = true;
-     return;
-   }
-
+    if (!initialized) { initialized = true; return; }
     snapshot.docChanges().forEach(async change => {
       if (change.type !== 'added') return;
-
       const data = change.doc.data();
+      const ts   = data.date?.toMillis?.() ?? 0;
+      if (ts < subscribeTime) return;
 
-     // 3. Sadece subscribeTime sonrası yaratılanlara izin ver
-     const ts = data.date?.toMillis?.() ?? 0;
-     if (ts < subscribeTime) return;
-
+      // Firestore'a sadece bildirim kaydet
       const {
-        direction,
-        date,
-        senderName,
-        recipientName,
-        senderAccountId,
-        recipientAccountId,
+        direction, date,
+        senderName, recipientName,
+        senderAccountId, recipientAccountId,
         amount: rawAmount
       } = data;
 
       const isOutgoing = direction === 'out';
-      const dt   = date.toDate();
-      const dateStr = dt.toLocaleDateString('tr-TR');
-      const timeStr = dt.toLocaleTimeString('tr-TR', {
-        hour: '2-digit',
+      const dt         = date.toDate();
+      const dateStr    = dt.toLocaleDateString('tr-TR');
+      const timeStr    = dt.toLocaleTimeString('tr-TR', {
+        hour:   '2-digit',
         minute: '2-digit'
       });
 
-      const acctId    = isOutgoing ? senderAccountId    : recipientAccountId;
-      const acctShort = acctId.replace(/\s+/g, '').slice(-4);
-
-      const counterpartyName = isOutgoing ? recipientName : senderName;
-      const counterpartyIban = maskIban(isOutgoing ? recipientAccountId : senderAccountId);
-
-      const amount = Math.abs(rawAmount).toLocaleString('tr-TR', {
+      const acctId      = isOutgoing ? senderAccountId : recipientAccountId;
+      const acctShort   = acctId.replace(/\s+/g, '').slice(-4);
+      const counterName = isOutgoing ? recipientName : senderName;
+      const counterIban = maskIban(isOutgoing ? recipientAccountId : senderAccountId);
+      const amount      = Math.abs(rawAmount).toLocaleString('tr-TR', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
       });
@@ -90,20 +82,10 @@ export function subscribeToIncomingTransactions() {
       const title = isOutgoing
         ? 'Hesabınızdan para gönderildi'
         : 'Hesabınıza para geldi';
-
       const body = isOutgoing
-        ? `${dateStr} saat ${timeStr}'de ${acctShort} nolu hesabınızdan FAST ile ` +
-          `${counterpartyName} ${counterpartyIban} hesabına ${amount} TL gönderilmiştir ${change.doc.id}`
-        : `${dateStr} saat ${timeStr}'de ${acctShort} nolu hesabınıza FAST ile ` +
-          `${counterpartyName} ${counterpartyIban} hesabından ${amount} TL gönderilmiştir ${change.doc.id}`;
+        ? `${dateStr} saat ${timeStr}'de ${acctShort} nolu hesabınızdan FAST ile ${counterName} ${counterIban} hesabına ${amount} TL gönderildi.`
+        : `${dateStr} saat ${timeStr}'de ${acctShort} nolu hesabınıza FAST ile ${counterName} ${counterIban} hesabından ${amount} TL geldi.`;
 
-      // (A) Lokal bildirim
-      await Notifications.scheduleNotificationAsync({
-        content: { title, body, data: { transactionId: change.doc.id } },
-        trigger: null
-      });
-
-      // (B) Firestore’a tekil kaydet
       const notifDoc = doc(notifCol, change.doc.id);
       await setDoc(notifDoc, {
         title,
@@ -112,6 +94,83 @@ export function subscribeToIncomingTransactions() {
         read: false,
         transactionId: change.doc.id,
         type: 'transfer'
+      });
+    });
+  });
+
+  return unsubscribe;
+}
+
+/**
+ * Firestore’daki “friend_request” tipli bildirimleri dinler,
+ * (Banner scheduling, subscribeToNotifications ile yapılacak.)
+ */
+export function subscribeToFriendRequests() {
+  Notifications.requestPermissionsAsync();
+  const uid = auth.currentUser?.uid;
+  if (!uid) return () => {};
+
+  const notifCol = collection(firestore, 'users', uid, 'notifications');
+  const q        = query(notifCol, where('type', '==', 'friend_request'), orderBy('timestamp', 'desc'));
+
+  let initialized = false;
+  const unsubscribe = onSnapshot(q, snapshot => {
+    if (!initialized) { initialized = true; return; }
+    // Sadece Firestore’daki notification koleksiyonu güncellensin
+    // Lokal banner, subscribeToNotifications ile gösterilecek
+  });
+
+  return unsubscribe;
+}
+
+/**
+ * Firestore’daki “money_request” tipli bildirimleri dinler,
+ * (Banner scheduling, subscribeToNotifications ile yapılacak.)
+ */
+export function subscribeToMoneyRequests() {
+  Notifications.requestPermissionsAsync();
+  const uid = auth.currentUser?.uid;
+  if (!uid) return () => {};
+
+  const notifCol = collection(firestore, 'users', uid, 'notifications');
+  const q        = query(notifCol, where('type', '==', 'money_request'), orderBy('timestamp', 'desc'));
+
+  let initialized = false;
+  const unsubscribe = onSnapshot(q, snapshot => {
+    if (!initialized) { initialized = true; return; }
+    // Lokaller kaldırıldı; subscribeToNotifications ile tek banner
+  });
+
+  return unsubscribe;
+}
+
+/**
+ * Tüm tipleri tek bir abone altında birleştirmek için:
+ */
+export function subscribeToNotifications() {
+  Notifications.requestPermissionsAsync();
+  const uid = auth.currentUser?.uid;
+  if (!uid) return () => {};
+
+  const notifCol = collection(firestore, 'users', uid, 'notifications');
+  const q        = query(notifCol, orderBy('timestamp', 'desc'));
+
+  let initialized = false;
+  const unsubscribe = onSnapshot(q, snapshot => {
+    if (!initialized) { initialized = true; return; }
+    snapshot.docChanges().forEach(async change => {
+      if (change.type !== 'added') return;
+      const data = change.doc.data();
+      if (!['transfer','friend_request','money_request'].includes(data.type)) return;
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title:     data.title,
+          body:      data.body,
+          data,
+          channelId: 'default',
+          sound:     false
+        },
+        trigger: null
       });
     });
   });

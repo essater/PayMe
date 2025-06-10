@@ -10,6 +10,8 @@ import { onAuthStateChanged } from 'firebase/auth';
 import Toast from 'react-native-toast-message';
 import { View, Text } from 'react-native';
 
+import { NotificationViewModel } from '../viewmodels/NotificationViewModel';
+
 // Screens
 import SignupScreen from '../views/SignupScreen';
 import LoginScreen from '../views/LoginScreen';
@@ -20,15 +22,17 @@ import TransferSuccessScreen from '../views/TransferSuccessScreen';
 import TransactionScreen from '../views/TransactionScreen';
 import QRScreen from '../views/QRScreen';
 import ProfileScreen from '../views/ProfileScreen';
-import CardsScreen from '../views/CardsScreen';
+import FriendsScreen from '../views/FriendsScreen';
+import RequestMoneyScreen from '../views/RequestMoneyScreen';
 import ChangePasswordScreen from '../views/ChangePasswordScreen';
 import ContactSupportScreen from '../views/ContactSupportScreen';
 import ForgotPasswordScreen from '../views/ForgotPasswordScreen';
 import NotificationsScreen from '../views/NotificationsScreen';
+import AddFriendScreen from '../views/AddFriendScreen';
+
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
-
 
 const toastConfig = {
   success: ({ text1, text2 }) => (
@@ -75,7 +79,7 @@ function MainTabs() {
         tabBarIcon: ({ color, size }) => {
           let iconName;
           if (route.name === 'Ana Sayfa') iconName = 'home-outline';
-          else if (route.name === 'Kartlar') iconName = 'card-outline';
+          else if (route.name === 'Arkadaşlar') iconName = 'people-outline';
           else if (route.name === 'QR') iconName = 'qr-code-outline';
           else if (route.name === 'Hesabım') iconName = 'person-outline';
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -85,7 +89,7 @@ function MainTabs() {
       })}
     >
       <Tab.Screen name="Ana Sayfa" component={HomeScreen} />
-      <Tab.Screen name="Kartlar" component={CardsScreen} />
+      <Tab.Screen name="Arkadaşlar" component={FriendsScreen} />
       <Tab.Screen name="QR" component={QRScreen} />
       <Tab.Screen name="Hesabım" component={ProfileScreen} />
     </Tab.Navigator>
@@ -96,18 +100,18 @@ export default function AppNavigator() {
   const [initialRoute, setInitialRoute] = useState(null);
 
   useEffect(() => {
+    NotificationViewModel.init();
+    return () => NotificationViewModel.cleanup();
+  }, []);
+
+  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        if (user.emailVerified) {
-          setInitialRoute('Main');
-        } else {
-          setInitialRoute('Verification');
-        }
+        setInitialRoute(user.emailVerified ? 'Main' : 'Verification');
       } else {
         setInitialRoute('Login');
       }
     });
-
     return unsubscribe;
   }, []);
 
@@ -123,14 +127,14 @@ export default function AppNavigator() {
         <Stack.Screen name="Transfer" component={TransferScreen} />
         <Stack.Screen name="TransferSuccess" component={TransferSuccessScreen} />
         <Stack.Screen name="Transaction" component={TransactionScreen} />
+        <Stack.Screen name="RequestMoney" component={RequestMoneyScreen} />
         <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
         <Stack.Screen name="ContactSupport" component={ContactSupportScreen} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
         <Stack.Screen name="QRScreen" component={QRScreen} />
         <Stack.Screen name="Notifications" component={NotificationsScreen} />
+        <Stack.Screen name="AddFriend" component={AddFriendScreen} />
       </Stack.Navigator>
-
-      {/* ✅ Toast bileşeni (özelleştirilmiş konum ve stil ile) */}
       <Toast config={toastConfig} position="top" topOffset={60} />
     </NavigationContainer>
   );

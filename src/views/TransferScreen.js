@@ -14,6 +14,7 @@ function formatIbanWithSpaces(text) {
   return onlyChars.match(/.{1,4}/g)?.join(' ') || '';
 }
 
+
 const REASONS = [
   'Diğer Kira Ödemesi', 'E-Ticaret Ödemesi', 'Çalışan Ödemesi',
   'Ticari Ödeme', 'Bireysel Ödeme', 'Yatırım', 'Finansal',
