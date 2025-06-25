@@ -1,5 +1,3 @@
-// src/views/ChangePasswordScreen.js
-
 import React, { useState } from 'react';
 import {
   View,
@@ -7,6 +5,9 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  Platform,
+  KeyboardAvoidingView,
+  ScrollView
 } from 'react-native';
 import { auth } from '../services/firebase';
 import { reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
@@ -18,6 +19,11 @@ export default function ChangePasswordScreen() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const navigation = useNavigation();
 
   const handleChangePassword = async () => {
@@ -52,49 +58,69 @@ export default function ChangePasswordScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color="#1F2937" />
-      </TouchableOpacity>
+    <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.container}
+        >
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color="#3d5a80" />
+        </TouchableOpacity>
 
-      <Text style={styles.title}>Şifre Değiştir</Text>
+        <Text style={styles.title}>Şifre Değiştir</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Mevcut Şifre"
-        secureTextEntry
-        value={currentPassword}
-        onChangeText={setCurrentPassword}
-      />
+        <View style={styles.inputWrapper}>
+          <TextInput
+            style={styles.input}
+            placeholder="Mevcut Şifre"
+            secureTextEntry={!showCurrent}
+            value={currentPassword}
+            onChangeText={setCurrentPassword}
+          />
+          <TouchableOpacity onPress={() => setShowCurrent(!showCurrent)} style={styles.eyeButton}>
+            <Ionicons name={showCurrent ? 'eye' : 'eye-off'} size={22} color="#4a5568" />
+          </TouchableOpacity>
+        </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Yeni Şifre"
-        secureTextEntry
-        value={newPassword}
-        onChangeText={setNewPassword}
-      />
+        <View style={styles.inputWrapper}>
+          <TextInput
+            style={styles.input}
+            placeholder="Yeni Şifre"
+            secureTextEntry={!showNew}
+            value={newPassword}
+            onChangeText={setNewPassword}
+          />
+          <TouchableOpacity onPress={() => setShowNew(!showNew)} style={styles.eyeButton}>
+            <Ionicons name={showNew ? 'eye' : 'eye-off'} size={22} color="#4a5568" />
+          </TouchableOpacity>
+        </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Yeni Şifre (Tekrar)"
-        secureTextEntry
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-      />
+        <View style={styles.inputWrapper}>
+          <TextInput
+            style={styles.input}
+            placeholder="Yeni Şifre (Tekrar)"
+            secureTextEntry={!showConfirm}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
+          <TouchableOpacity onPress={() => setShowConfirm(!showConfirm)} style={styles.eyeButton}>
+            <Ionicons name={showConfirm ? 'eye' : 'eye-off'} size={22} color="#4a5568" />
+          </TouchableOpacity>
+        </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleChangePassword}>
-        <Text style={styles.buttonText}>Şifreyi Güncelle</Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity style={styles.button} onPress={handleChangePassword}>
+          <Text style={styles.buttonText}>Şifreyi Güncelle</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#f7fafd',
     justifyContent: 'center',
   },
   title: {
@@ -102,19 +128,32 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
+    color: '#3d5a80'
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#dce3ed',
+    borderRadius: 8,
+    marginBottom: 15,
+    backgroundColor: '#fff',
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
+    flex: 1,
     padding: 12,
-    marginBottom: 15,
+    fontSize: 16,
+    color: '#2b2d42',
+  },
+  eyeButton: {
+    paddingHorizontal: 12,
   },
   button: {
-    backgroundColor: '#1F2937',
+    backgroundColor: '#3d5a80',
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: 'center',
+    marginTop: 10
   },
   buttonText: {
     color: '#fff',

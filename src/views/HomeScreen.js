@@ -210,12 +210,12 @@ export default function HomeScreen({ navigation }) {
       <View style={styles.buttonsRow}>
         <TouchableOpacity style={[styles.transferButton, { flex: 1, marginRight: 8 }]} onPress={() => navigation.navigate('Transfer')}>
           <Image source={require('../../assets/gitti.png')} style={[styles.buttonIcon, { tintColor: 'white' }]} />
-          <Text style={styles.transferButtonText}>Para Gönder</Text>
+          <Text style={styles.transferButtonText}>MePay</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={[styles.transferButton, { flex: 1, marginLeft: 8 }]} onPress={openSheet}>
           <Image source={require('../../assets/geldi.png')} style={[styles.buttonIcon, { tintColor: 'white' }]} />
-          <Text style={styles.transferButtonText}>Para İste</Text>
+          <Text style={styles.transferButtonText}>PayMe</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.historyIconButton} onPress={() => navigation.navigate('Transaction')}>
@@ -313,6 +313,6 @@ const styles = StyleSheet.create({
   avatarText: { color: 'white', fontSize: 16, fontWeight: '600' },
    friendNickname: { fontSize: 16, fontWeight: '500', color: '#333' },
   friendFullname: { fontSize: 12, color: '#666', marginTop: 2 },
-  closeButton: { marginTop: 12, alignSelf: 'center', paddingVertical: 8 },
+  closeButton: { marginTop: 12, alignSelf: 'center', paddingVertical: 50 },
   closeButtonText: { fontSize: 16, color: '#d32f2f', fontWeight: '600' }
 });

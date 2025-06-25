@@ -70,13 +70,13 @@ export default function AddFriendScreen({ navigation }) {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         {/* HEADER */}
-        <View style={styles.headerBar}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color="#333" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Arkadaş Ekle</Text>
-          <View style={{ width: 40 }} />
-        </View>
+       <View style={styles.header}>
+  <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+    <Ionicons name="chevron-back" size={24} color="#3d5a80" />
+  </TouchableOpacity>
+  <Text style={styles.title}>Arkadaş Ekle</Text>
+  <View style={{ width: 40 }} />
+</View>
 
         {/* FORM */}
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -134,44 +134,49 @@ export default function AddFriendScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#f2f2f2' },
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f7fafd' // Light Pastel Background
+  },
   container: {
     flex: 1,
-    paddingHorizontal: 20,
     justifyContent: 'space-between'
   },
-  headerBar: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 56,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderColor: '#ececec',
-    paddingHorizontal: 12
+    borderColor: '#dce3ed' // Light Grey Border
   },
   backButton: {
     width: 40,
     justifyContent: 'center',
     alignItems: 'center'
   },
-  headerTitle: {
-    flex: 1,
+  title: {
+   
     textAlign: 'center',
     fontSize: 18,
-    fontWeight: '600',
-    color: '#333'
+    fontWeight: 'bold',
+    color: '#3d5a80' // Primary Blue
   },
-  content: { paddingVertical: 20 },
+  content: {
+    paddingHorizontal: 20,
+    paddingVertical: 20
+  },
   label: {
     fontSize: 14,
-    color: '#555',
+    color: '#4a5568', // Secondary Text
     marginBottom: 6
   },
   input: {
     backgroundColor: '#fff',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#dce3ed', // Light Grey Border
     paddingHorizontal: 16,
     paddingVertical: Platform.OS === 'ios' ? 12 : 8,
     fontSize: 16,
@@ -179,14 +184,15 @@ const styles = StyleSheet.create({
     marginBottom: 20
   },
   button: {
-    backgroundColor: '#2c2c97',
+    backgroundColor: '#3d5a80', // Primary Blue
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',
+    marginHorizontal: 20,
     marginBottom: 20
   },
   buttonDisabled: {
-    backgroundColor: '#999'
+    backgroundColor: '#dce3ed' // Light Grey for disabled
   },
   buttonText: {
     color: '#fff',

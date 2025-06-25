@@ -53,7 +53,7 @@ export default function RequestMoneyScreen({ navigation, route }) {
       {/* Başlık */}
       <View style={styles.headerBar}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#333" />
+          <Ionicons name="chevron-back" size={24} color="#3d5a80" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Para İste</Text>
       </View>
@@ -112,7 +112,10 @@ export default function RequestMoneyScreen({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#f2f2f2' },
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f7fafd' // 🎨 Açık pastel arka plan
+  },
   headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -120,36 +123,44 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderColor: '#ececec'
+    borderColor: '#dbe2ef' // 🎨 Modal çizgiler
   },
-  backButton: { width: 40, justifyContent: 'center' },
-  headerTitle: {
-    flex: 1,
+backButton: { width: 40, justifyContent: 'center', alignItems: 'center' , color: '#3d5a80'},
+
+   headerTitle: {
+   
     textAlign: 'center',
     fontSize: 18,
     fontWeight: '600',
-    color: '#333'
+    color: '#3d5a80'
   },
-  container: { flex: 1, padding: 16 },
-  label: { marginTop: 12, fontSize: 14, color: '#333' },
+  container: {
+    flex: 1,
+    padding: 16
+  },
+  label: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#4a5568' // 🎨 Açıklama yazı
+  },
   input: {
     marginTop: 6,
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#dce3ed', // 🎨 Açık gri kenarlık
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: Platform.OS === 'ios' ? 12 : 8,
     fontSize: 16,
-    color: '#000'
+    color: '#2b2d42' // 🎨 Koyu başlık
   },
   readonly: {
-    backgroundColor: '#f0f0f0',
-    color: '#555'
+    backgroundColor: '#f7fafd', // 🎨 Açık pastel arka plan (readonly için)
+    color: '#4a5568'
   },
   requestButton: {
     marginTop: 24,
-    backgroundColor: '#4caf50',
+    backgroundColor: '#3d5a80', // 🎨 Buton mavisi
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: 'center'

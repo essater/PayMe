@@ -27,6 +27,7 @@ import ContactSupportScreen from '../views/ContactSupportScreen';
 import ForgotPasswordScreen from '../views/ForgotPasswordScreen';
 import NotificationsScreen from '../views/NotificationsScreen';
 import AddFriendScreen from '../views/AddFriendScreen';
+import SplashScreen from '../views/SplashScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -107,7 +108,7 @@ export default function AppNavigator() {
       if (user) {
         setInitialRoute(user.emailVerified ? 'Main' : 'Verification');
       } else {
-        setInitialRoute('Login');
+        setInitialRoute('Splash');
       }
     });
     return unsubscribe;
@@ -132,8 +133,11 @@ export default function AppNavigator() {
         <Stack.Screen name="QRScreen" component={QRScreen} />
         <Stack.Screen name="AddFriend" component={AddFriendScreen} />
         <Stack.Screen name="Notifications" component={NotificationsScreen} />
+        <Stack.Screen name="Splash" component={SplashScreen} />
       </Stack.Navigator>
       <Toast config={toastConfig} position="top" topOffset={60} />
     </NavigationContainer>
   );
 }
+
+

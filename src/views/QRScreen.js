@@ -146,13 +146,16 @@ export default function QRScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+  container: {
+    flex: 1,
+    backgroundColor: "#f7fafd" // lightBackground
+  },
   topBar: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: 8,
-    backgroundColor: "rgba(44, 44, 151, 0.1)",
+    backgroundColor: "rgba(61, 90, 128, 0.1)", // primaryBlue with transparency
   },
   tabButton: {
     paddingHorizontal: 12,
@@ -160,10 +163,10 @@ const styles = StyleSheet.create({
   },
   activeTabButton: {
     borderRadius: 12,
-    backgroundColor: "rgba(44, 44, 151, 0.3)",
+    backgroundColor: "rgba(61, 90, 128, 0.3)", // primaryBlue with stronger opacity
   },
   tabText: {
-    color: "#2c2c97",
+    color: "#3d5a80", // primaryBlue
     fontWeight: "500",
     fontSize: 14,
     opacity: 0.6,
@@ -173,7 +176,7 @@ const styles = StyleSheet.create({
     opacity: 1,
   },
   separator: {
-    color: "#2c2c97",
+    color: "#3d5a80", // primaryBlue
     marginHorizontal: 4,
     fontWeight: "600",
     fontSize: 14,
@@ -193,14 +196,15 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 18,
     fontWeight: "bold",
-    color: "#2c2c97",
+    color: "#3d5a80", // primaryBlue
   },
   message: {
     textAlign: "center",
     padding: 20,
+    color: "#4a5568", // secondaryText
   },
   permissionButton: {
-    backgroundColor: "#2c2c97",
+    backgroundColor: "#3d5a80", // buttonBlue
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 8,
@@ -211,5 +215,4 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
   },
-
 });

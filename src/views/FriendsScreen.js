@@ -15,15 +15,21 @@ import {
   Modal,
   TextInput,
   TouchableWithoutFeedback,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { FriendsViewModel } from '../viewmodels/FriendsViewModel';
+import { auth, firestore } from '../services/firebase';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+
 
 export default function FriendsScreen({ navigation }) {
   const [friends, setFriends] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  
 
   // --- Düzenleme modal state’leri ---
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -40,6 +46,16 @@ export default function FriendsScreen({ navigation }) {
     });
     return () => unsub();
   }, []);
+  useEffect(() => {
+  const uid = auth.currentUser?.uid;
+  if (!uid) return;
+  const notifRef = collection(firestore, 'users', uid, 'notifications');
+  const q = query(notifRef, where('read', '==', false));
+  const unsub = onSnapshot(q, snap => {
+    setUnreadCount(snap.size);
+  });
+  return unsub;
+}, []);
 
   const toggleExpand = id => {
     setExpandedId(prev => (prev === id ? null : id));
@@ -115,7 +131,10 @@ export default function FriendsScreen({ navigation }) {
       <View style={styles.card}>
         <View style={styles.row}>
           <View style={styles.friendInfo}>
-            <Ionicons name="person-circle-outline" size={40} color="#2c2c97" />
+            <Image
+  source={require('../../assets/account_icon.png')}
+  style={styles.avatarImage}
+/>
             <View style={styles.textContainer}>
               <Text style={styles.nickname}>{item.nickname}</Text>
               <Text style={styles.fullName}>{item.name}</Text>
@@ -178,7 +197,7 @@ export default function FriendsScreen({ navigation }) {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#1F2937" />
+          <Ionicons name="arrow-back" size={24} color="#3d5a80" />
         </TouchableOpacity>
         <Text style={styles.title}>Arkadaşlarım</Text>
         <View style={styles.rightButtons}>
@@ -186,15 +205,21 @@ export default function FriendsScreen({ navigation }) {
             style={styles.addButton}
             onPress={() => navigation.navigate('AddFriend')}
           >
-            <Ionicons name="person-add-outline" size={18} color="#2c2c97" />
+            <Ionicons name="person-add-outline" size={18} color="#3d5a80" />
+            
             <Text style={styles.addText}>Arkadaş Ekle</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => navigation.navigate('Notifications')}
-            style={styles.iconBtn}
-          >
-            <Ionicons name="notifications-outline" size={24} color="#2c2c97" />
-          </TouchableOpacity>
+  style={styles.notificationButton}
+  onPress={() => navigation.navigate('Notifications')}
+>
+  <View>
+    <Image source={require('../../assets/bell.png')} style={{ width: 24, height: 24, tintColor: '#3d5a80' }} />
+    {unreadCount > 0 && (
+      <View style={styles.unreadBadge} />
+    )}
+  </View>
+</TouchableOpacity>
         </View>
       </View>
 
@@ -275,7 +300,7 @@ export default function FriendsScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f2f2f2',
+    backgroundColor: '#f7fafd', // Light Pastel Background
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
   },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
@@ -285,13 +310,13 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderColor: '#e0e0e0'
+    borderColor: '#dce3ed' // Light Grey Border
   },
   title: {
     flex: 1,
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#3d5a80', // Dark Heading
     marginLeft: 8
   },
   rightButtons: { flexDirection: 'row', alignItems: 'center' },
@@ -299,17 +324,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#2c2c97',
+    borderColor: '#3d5a80', // Primary Blue
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 4,
     marginRight: 12
   },
-  addText: { marginLeft: 6, color: '#2c2c97', fontWeight: '600' },
+  addText: { marginLeft: 6, color: '#3d5a80', fontWeight: '600' },
   iconBtn: { marginLeft: 12, padding: 4 },
 
   list: { padding: 16 },
-  empty: { marginTop: 40, textAlign: 'center', color: '#666' },
+  empty: { marginTop: 40, textAlign: 'center', color: '#4a5568' }, // Secondary Text
 
   card: {
     backgroundColor: '#fff',
@@ -331,13 +356,13 @@ const styles = StyleSheet.create({
     flex: 1
   },
   textContainer: { marginLeft: 12, flex: 1 },
-  nickname: { fontSize: 18, fontWeight: '600', color: '#333' },
-  fullName: { fontSize: 14, color: '#555', marginTop: 4 },
-  iban: { fontSize: 12, color: '#999', marginTop: 2 },
+  nickname: { fontSize: 18, fontWeight: '600', color: '#2b2d42' }, // Dark Heading
+  fullName: { fontSize: 14, color: '#4a5568', marginTop: 4 }, // Secondary Text
+  iban: { fontSize: 12, color: '#4a5568', marginTop: 2 }, // Light Grey Border
 
   actionsInline: { marginTop: 12 },
   actionBtn: {
-    backgroundColor: '#2c2c97',
+    backgroundColor: '#3d5a80', // Button Blue
     paddingVertical: 12,
     borderRadius: 6,
     marginBottom: 8,
@@ -366,16 +391,16 @@ const styles = StyleSheet.create({
   modalContent: {
     padding: 20
   },
-  modalTitle: { fontSize: 18, fontWeight: '600', marginBottom: 12, textAlign: 'center' },
-  label: { fontSize: 14, marginTop: 8, color: '#333' },
+  modalTitle: { fontSize: 18, fontWeight: '600', marginBottom: 12, textAlign: 'center', color: '#2b2d42' },
+  label: { fontSize: 14, marginTop: 8, color: '#2b2d42' },
   input: {
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#fff',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginTop: 4,
     borderWidth: 1,
-    borderColor: '#ddd'
+    borderColor: '#dbe2ef' // Modal Divider Lines
   },
   modalButtons: {
     flexDirection: 'row',
@@ -389,17 +414,39 @@ const styles = StyleSheet.create({
     marginLeft: 8
   },
   cancelButton: {
-    backgroundColor: '#eee'
+    backgroundColor: '#dce3ed'
   },
   cancelText: {
-    color: '#333',
+    color: '#4a5568',
     fontWeight: '600'
   },
   saveButton: {
-    backgroundColor: '#2c2c97'
+    backgroundColor: '#3d5a80'
   },
   saveText: {
     color: '#fff',
     fontWeight: '600'
-  }
+  },
+
+  notificationButton: {
+  marginLeft: 12,
+  padding: 4
+},
+unreadBadge: {
+  position: 'absolute',
+  top: -3,
+  right: -3,
+  width: 10,
+  height: 10,
+  borderRadius: 5,
+  backgroundColor: '#d32f2f'
+},
+avatarImage: {
+  width: 40,
+  height: 40,
+  borderRadius: 20,
+  resizeMode: 'contain',
+  marginRight: 8
+}
 });
+

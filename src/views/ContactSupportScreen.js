@@ -51,7 +51,7 @@ export default function ContactSupportScreen() {
     >
       {/* Geri Butonu */}
       <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color="#1F2937" />
+        <Ionicons name="arrow-back" size={24} color="#3d5a80" />
       </TouchableOpacity>
 
       <Text style={styles.header}>Bize Ulaşın</Text>
@@ -78,14 +78,14 @@ export default function ContactSupportScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     padding: 20,
-    paddingTop: 110,   // Geri butonun yüksekliği ve üst boşluk için yeterli alan
-    backgroundColor: '#fff'
+    paddingTop: 110,
+    backgroundColor: '#f7fafd', // pastel arka plan
   },
   backButton: {
     position: 'absolute',
-    top: 60,    // Geri buton biraz daha yukarda olabilir, ayarlayabilirsin
+    top: 60,
     left: 20,
     zIndex: 10,
   },
@@ -93,7 +93,8 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,
-    marginTop: 10   // İçerik üst başlığı biraz boşluk bıraksın
+    marginTop: 10,
+    color: '#3d5a80' // koyu başlık
   },
   subText: {
     fontSize: 14,
@@ -102,21 +103,24 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#dce3ed',
     borderRadius: 8,
-    padding: 10,
+    padding: 12,
     minHeight: 120,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#fff',
+    fontSize: 16,
+    color: '#2b2d42',
     marginBottom: 20
   },
   button: {
-    backgroundColor: '#2c2c97',
+    backgroundColor: '#3d5a80',
     padding: 15,
     borderRadius: 8
   },
   buttonText: {
     color: '#fff',
     textAlign: 'center',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    fontSize: 16
   }
 });

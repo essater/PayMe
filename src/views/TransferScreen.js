@@ -131,7 +131,7 @@ export default function TransferScreen({ navigation, route }) {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.headerBar}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
+          <Ionicons name="arrow-back" size={24} color="#3d5a80" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Para Gönder</Text>
         <View style={{ width: 40 }} />
@@ -218,42 +218,118 @@ export default function TransferScreen({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#f2f2f2' },
+  safeArea: { flex: 1, backgroundColor: '#f7fafd' },
+
   headerBar: {
-    flexDirection: 'row', alignItems: 'center',
-    height: 56, paddingHorizontal: 12, backgroundColor: '#fff',
-    borderBottomWidth: 1, borderColor: '#ececec'
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 56,
+    paddingHorizontal: 12,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderColor: '#dbe2ef'
   },
+
   backButton: { width: 40, justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { flex: 1, textAlign: 'center', fontSize: 18, fontWeight: '600', color: '#333' },
+
+  headerTitle: {
+    
+    textAlign: 'center',
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#3d5a80'
+  },
+
   container: { flex: 1, padding: 16 },
-  label: { fontSize: 14, marginBottom: 6, color: '#333', marginTop: 12 },
+
+  label: {
+    fontSize: 14,
+    marginBottom: 6,
+    color: '#3d5a80',
+    fontWeight: '600',
+    marginTop: 12
+  },
+
   input: {
-    borderWidth: 1, borderColor: '#ccc', borderRadius: 8,
-    paddingHorizontal: 12, paddingVertical: Platform.OS === 'ios' ? 12 : 8,
-    backgroundColor: '#fff', fontSize: 16, color: '#000'
+    borderWidth: 1,
+    borderColor: '#dce3ed',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: Platform.OS === 'ios' ? 14 : 10,
+    backgroundColor: '#ffffff',
+    fontSize: 16,
+    color: '#1a1a1a'
   },
+
   sendButton: {
-    backgroundColor: '#2c2c97', paddingVertical: 14,
-    borderRadius: 8, alignItems: 'center', marginTop: 24
+    backgroundColor: '#3d5a80',
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 24,
+    shadowColor: '#3d5a80',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3
   },
-  sendButtonText: { color: 'white', fontSize: 16, fontWeight: '600' },
+
+  sendButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600'
+  },
+
   modalOverlay: {
-    flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end'
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'flex-end'
   },
+
   modalContent: {
-    backgroundColor: '#fff', borderTopLeftRadius: 12,
-    borderTopRightRadius: 12, maxHeight: '60%'
+    backgroundColor: '#ffffff',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    maxHeight: '60%',
+    paddingBottom: 10
   },
+
   modalTitle: {
-    fontSize: 16, fontWeight: '600', textAlign: 'center',
-    paddingVertical: 12, borderBottomWidth: 1, borderColor: '#ececec'
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderColor: '#dbe2ef',
+    color: '#2b2d42'
   },
-  reasonItem: { paddingVertical: 14, paddingHorizontal: 20 },
-  reasonText: { fontSize: 16, color: '#333' },
-  reasonSeparator: { height: 1, backgroundColor: '#ececec', marginHorizontal: 20 },
+
+  reasonItem: {
+    paddingVertical: 14,
+    paddingHorizontal: 20
+  },
+
+  reasonText: {
+    fontSize: 16,
+    color: '#3d5a80'
+  },
+
+  reasonSeparator: {
+    height: 1,
+    backgroundColor: '#e2e8f0',
+    marginHorizontal: 20
+  },
+
   modalCloseButton: {
-    paddingVertical: 14, alignItems: 'center', borderTopWidth: 1, borderColor: '#ececec'
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderColor: '#dbe2ef'
   },
-  modalCloseText: { fontSize: 16, color: '#007AFF', fontWeight: '600' }
+
+  modalCloseText: {
+    fontSize: 16,
+    color: '#3d5a80',
+    fontWeight: '600'
+  }
 });

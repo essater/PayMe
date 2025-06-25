@@ -1,18 +1,22 @@
-// src/views/TransferSuccessScreen.js
-
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 
 export default function TransferSuccessScreen({ navigation }) {
   return (
     <View style={styles.container}>
-      <Text style={styles.successText}>✅ Transfer Başarılı!</Text>
+      {/* ✔️ Büyük check görseli */}
+      <Image
+        source={require('../../assets/check.png')} // senin check görselin
+        style={styles.successIcon}
+        resizeMode="contain"
+      />
+
+      <Text style={styles.successText}>Transfer Başarılı!</Text>
       <Text style={styles.message}>İşleminiz başarıyla tamamlandı.</Text>
 
       <TouchableOpacity
         style={styles.button}
         onPress={() => {
-          // Ana ekrana sıfırlı şekilde dön
           navigation.reset({
             index: 0,
             routes: [{ name: 'Main' }]
@@ -28,25 +32,33 @@ export default function TransferSuccessScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f2f2f2',
+    backgroundColor: '#f7fafd', // Light Pastel Background
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    paddingHorizontal: 24
+  },
+  successIcon: {
+    width: 100,
+    height: 100,
+    marginBottom: 24
   },
   successText: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 12,
-    color: '#2c2c97'
+    color: '#2b2d42', // Dark Heading Text
+    marginBottom: 10,
+    textAlign: 'center'
   },
   message: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 30
+    fontSize: 18,
+    color: '#4a5568', // Secondary Text
+    marginBottom: 30,
+    textAlign: 'center'
   },
   button: {
-    backgroundColor: '#2c2c97',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    backgroundColor: '#3d5a80', // Primary Blue
+    paddingHorizontal: 32,
+    paddingVertical: 14,
     borderRadius: 8
   },
   buttonText: {

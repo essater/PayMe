@@ -5,7 +5,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
+  Image
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -82,27 +83,49 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9FAFB', paddingTop: 80 },
-  centered: { justifyContent: 'center', alignItems: 'center' },
-  headerBox: { alignItems: 'center', marginBottom: 30 },
-  nameText: { fontSize: 20, fontWeight: 'bold', color: '#1F2937' },
-  emailText: { fontSize: 14, color: '#6B7280', marginTop: 4 },
-
+  container: {
+    flex: 1,
+    backgroundColor: '#f7fafd', // Light Pastel Background
+    paddingTop: 80
+  },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  headerBox: {
+    alignItems: 'center',
+    marginBottom: 30
+  },
+  nameText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2b2d42' // Dark Heading
+  },
+  emailText: {
+    fontSize: 14,
+    color: '#4a5568', // Secondary Text
+    marginTop: 4
+  },
   card: {
     marginHorizontal: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
-    shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10, elevation: 5
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5
   },
-
   option: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingVertical: 12, borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB'
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#dce3ed' // Light Grey Border
   },
-
   optionText: {
-    marginLeft: 12, fontSize: 16, color: '#1F2937'
+    marginLeft: 12,
+    fontSize: 16,
+    color: '#2b2d42' // Dark Heading
   }
 });
