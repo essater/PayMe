@@ -102,12 +102,17 @@ export default function SignupScreen() {
 
             <View style={styles.passwordContainer}>
               <TextInput
-                style={styles.inputPassword}
-                placeholder="Şifre"
-                secureTextEntry={isPasswordHidden}
-                value={password}
-                onChangeText={setPassword}
-              />
+  style={styles.inputPassword}
+  placeholder="Şifre"
+  secureTextEntry={isPasswordHidden}
+  value={password}
+  onChangeText={setPassword}
+  autoComplete="password"
+  textContentType="password"
+  importantForAutofill="no"
+  autoCorrect={false}
+  spellCheck={false}
+/>
               <TouchableOpacity onPress={() => setIsPasswordHidden(prev => !prev)}>
                 <Ionicons name={isPasswordHidden ? 'eye-off-outline' : 'eye-outline'} size={24} color="#666" />
               </TouchableOpacity>
@@ -115,12 +120,17 @@ export default function SignupScreen() {
 
             <View style={styles.passwordContainer}>
               <TextInput
-                style={styles.inputPassword}
-                placeholder="Şifreyi Tekrar Yaz"
-                secureTextEntry={isConfirmHidden}
-                value={confirm}
-                onChangeText={setConfirm}
-              />
+  style={styles.inputPassword}
+  placeholder="Şifreyi Tekrar Yaz"
+  secureTextEntry={isConfirmHidden}
+  value={confirm}
+  onChangeText={setConfirm}
+  autoComplete="password"
+  textContentType="password"
+  importantForAutofill="no"
+  autoCorrect={false}
+  spellCheck={false}
+/>
               <TouchableOpacity onPress={() => setIsConfirmHidden(prev => !prev)}>
                 <Ionicons name={isConfirmHidden ? 'eye-off-outline' : 'eye-outline'} size={24} color="#666" />
               </TouchableOpacity>
