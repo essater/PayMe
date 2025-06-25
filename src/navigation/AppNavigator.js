@@ -1,14 +1,12 @@
-// src/navigation/AppNavigator.js
-
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
-import { auth } from '../services/firebase';
+import { auth, firestore } from '../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import Toast from 'react-native-toast-message';
-import { View, Text } from 'react-native';
+import { View, Text, Image } from 'react-native';
 
 import { NotificationViewModel } from '../viewmodels/NotificationViewModel';
 
@@ -30,41 +28,18 @@ import ForgotPasswordScreen from '../views/ForgotPasswordScreen';
 import NotificationsScreen from '../views/NotificationsScreen';
 import AddFriendScreen from '../views/AddFriendScreen';
 
-
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 const toastConfig = {
   success: ({ text1, text2 }) => (
-    <View style={{
-      height: 60,
-      width: '90%',
-      backgroundColor: '#2c2c97',
-      borderRadius: 10,
-      paddingHorizontal: 16,
-      justifyContent: 'center',
-      shadowColor: '#000',
-      shadowOpacity: 0.2,
-      shadowRadius: 4,
-      alignSelf: 'center'
-    }}>
+    <View style={{ height: 60, width: '90%', backgroundColor: '#2c2c97', borderRadius: 10, paddingHorizontal: 16, justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 4, alignSelf: 'center' }}>
       <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16 }}>{text1}</Text>
       {text2 ? <Text style={{ color: 'white', fontSize: 13 }}>{text2}</Text> : null}
     </View>
   ),
   error: ({ text1, text2 }) => (
-    <View style={{
-      height: 60,
-      width: '90%',
-      backgroundColor: '#d32f2f',
-      borderRadius: 10,
-      paddingHorizontal: 16,
-      justifyContent: 'center',
-      shadowColor: '#000',
-      shadowOpacity: 0.2,
-      shadowRadius: 4,
-      alignSelf: 'center'
-    }}>
+    <View style={{ height: 60, width: '90%', backgroundColor: '#d32f2f', borderRadius: 10, paddingHorizontal: 16, justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 4, alignSelf: 'center' }}>
       <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16 }}>{text1}</Text>
       {text2 ? <Text style={{ color: 'white', fontSize: 13 }}>{text2}</Text> : null}
     </View>
@@ -72,20 +47,43 @@ const toastConfig = {
 };
 
 function MainTabs() {
+  const [hasUnread, setHasUnread] = useState(false);
+
+  useEffect(() => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+    const notifRef = collection(firestore, 'users', uid, 'notifications');
+    const q = query(notifRef, where('read', '==', false));
+    const unsubscribe = onSnapshot(q, snapshot => {
+      setHasUnread(!snapshot.empty);
+    });
+    return unsubscribe;
+  }, []);
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarIcon: ({ color, size }) => {
-          let iconName;
-          if (route.name === 'Ana Sayfa') iconName = 'home-outline';
-          else if (route.name === 'Arkadaşlar') iconName = 'people-outline';
-          else if (route.name === 'QR') iconName = 'qr-code-outline';
-          else if (route.name === 'Hesabım') iconName = 'person-outline';
-          return <Ionicons name={iconName} size={size} color={color} />;
+        tabBarIcon: ({ focused }) => {
+          let iconSource;
+          if (route.name === 'Ana Sayfa') iconSource = require('../../assets/home.png');
+          else if (route.name === 'Arkadaşlar') iconSource = require('../../assets/friends.png');
+          else if (route.name === 'QR') iconSource = require('../../assets/qr_code.png');
+          else if (route.name === 'Hesabım') iconSource = require('../../assets/account_icon.png');
+      
+
+          return (
+            <View>
+              <Image source={iconSource} style={{ width: 24, height: 24, tintColor: focused ? '#3d5a80' : '#999' }} />
+              {route.name === 'Bildirimler' && hasUnread && (
+                <View style={{ position: 'absolute', top: -2, right: -2, width: 8, height: 8, borderRadius: 4, backgroundColor: 'red' }} />
+              )}
+            </View>
+          );
         },
-        tabBarActiveTintColor: '#2c2c97',
-        tabBarInactiveTintColor: 'gray'
+        tabBarActiveTintColor: '#3d5a80',
+        tabBarInactiveTintColor: '#999',
+        tabBarStyle: { backgroundColor: '#fff', borderTopWidth: 0, elevation: 10 }
       })}
     >
       <Tab.Screen name="Ana Sayfa" component={HomeScreen} />
@@ -132,8 +130,8 @@ export default function AppNavigator() {
         <Stack.Screen name="ContactSupport" component={ContactSupportScreen} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
         <Stack.Screen name="QRScreen" component={QRScreen} />
-        <Stack.Screen name="Notifications" component={NotificationsScreen} />
         <Stack.Screen name="AddFriend" component={AddFriendScreen} />
+        <Stack.Screen name="Notifications" component={NotificationsScreen} />
       </Stack.Navigator>
       <Toast config={toastConfig} position="top" topOffset={60} />
     </NavigationContainer>

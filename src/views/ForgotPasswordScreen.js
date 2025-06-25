@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  Image,
+  Alert
+} from 'react-native';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../services/firebase';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,7 +26,7 @@ export default function ForgotPasswordScreen() {
 
     try {
       await sendPasswordResetEmail(auth, email);
-      Alert.alert('Başarılı', 'Şifre sıfırlama e-postası gönderildi.');
+      Alert.alert('Başarılı', 'E-posta gönderildi. Gelen kutunuzu kontrol edin.');
       navigation.goBack();
     } catch (err) {
       Alert.alert('Hata', err.message);
@@ -24,39 +34,99 @@ export default function ForgotPasswordScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color="#1F2937" />
-      </TouchableOpacity>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      style={styles.container}
+    >
+      <View style={styles.card}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={28} color="#3d5a80" />
+        </TouchableOpacity>
 
-      <Text style={styles.title}>Şifreyi Sıfırla</Text>
+        <View style={styles.logoContainer}>
+          <Image source={require('../../assets/PayMe_Logo4.png')} style={styles.logo} />
+        </View>
 
-      <TextInput
-        placeholder="E-posta adresiniz"
-        style={styles.input}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        value={email}
-        onChangeText={setEmail}
-      />
+        <Text style={styles.title}>Şifreyi Sıfırla</Text>
 
-      <TouchableOpacity style={styles.button} onPress={handleReset}>
-        <Text style={styles.buttonText}>Sıfırlama Bağlantısı Gönder</Text>
-      </TouchableOpacity>
-    </View>
+        <TextInput
+          placeholder="E-posta adresiniz"
+          style={styles.input}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          value={email}
+          onChangeText={setEmail}
+        />
+
+        <TouchableOpacity style={styles.button} onPress={handleReset}>
+          <Text style={styles.buttonText}>Sıfırlama Bağlantısı Gönder</Text>
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, justifyContent: 'center' },
-  backButton: { position: 'absolute', top: 40, left: 20 },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#3d5a80',
+  },
+  backButton: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    zIndex: 1,
+  },
+  logoContainer: {
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  logo: {
+    width: 500,
+    height: 200,
+    resizeMode: 'contain',
+    textAlign: 'center',
+    marginBottom: -50,
+  },
+  card: {
+    backgroundColor: '#fff',
+    padding: 25,
+    borderRadius: 16,
+    width: '85%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#3d5a80',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
   input: {
-    borderWidth: 1, borderColor: '#ccc', borderRadius: 8,
-    padding: 12, fontSize: 16, marginBottom: 16
+    height: 48,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#f9f9f9',
+    marginBottom: 16,
   },
   button: {
-    backgroundColor: '#2c2c97', padding: 14, borderRadius: 8
+    backgroundColor: '#3d5a80',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 16,
   },
-  buttonText: { color: '#fff', fontSize: 16, textAlign: 'center' }
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
 });

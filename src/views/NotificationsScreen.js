@@ -1,5 +1,3 @@
-// src/views/NotificationsScreen.js
-
 import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
@@ -8,7 +6,6 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { auth, firestore } from '../services/firebase';
@@ -23,7 +20,6 @@ import {
   serverTimestamp,
   getDocs,
   writeBatch,
-  updateDoc,
   where
 } from 'firebase/firestore';
 import { FriendRequestViewModel } from '../viewmodels/FriendRequestViewModel';
@@ -55,10 +51,7 @@ export default function NotificationsScreen({ navigation }) {
     if (snap.empty) return;
     const batch = writeBatch(firestore);
     snap.docs.forEach(d =>
-      batch.update(
-        doc(firestore, 'users', uid, 'notifications', d.id),
-        { read: true }
-      )
+      batch.update(doc(firestore, 'users', uid, 'notifications', d.id), { read: true })
     );
     await batch.commit();
   };
@@ -98,11 +91,11 @@ export default function NotificationsScreen({ navigation }) {
     await setDoc(
       doc(firestore, 'users', note.requestFrom, 'notifications', notifId),
       {
-        title:        'Para İsteği Reddedildi',
-        body:         `${note.requestFromName}, talebiniz reddedildi.`,
-        type:         'money_request_rejected',
-        timestamp:    serverTimestamp(),
-        read:         false
+        title: 'Para İsteği Reddedildi',
+        body: `${note.requestFromName}, talebiniz reddedildi.`,
+        type: 'money_request_rejected',
+        timestamp: serverTimestamp(),
+        read: false
       }
     );
     await deleteNotification(note.id);
@@ -116,64 +109,9 @@ export default function NotificationsScreen({ navigation }) {
   };
 
   const renderItem = ({ item }) => {
-    if (item.type === 'friend_request') {
-      return (
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.title}>{item.title}</Text>
-            <TouchableOpacity onPress={() => deleteNotification(item.id)}>
-              <Ionicons name="trash-outline" size={20} color="#d32f2f" />
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.body}>{item.body}</Text>
-          <View style={styles.buttons}>
-            <TouchableOpacity
-              style={styles.acceptBtn}
-              onPress={() => handleAcceptFriend(item)}
-            >
-              <Text style={styles.acceptText}>Kabul</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.rejectBtn}
-              onPress={() => handleRejectFriend(item)}
-            >
-              <Text style={styles.rejectText}>Reddet</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      );
-    }
-
-    if (item.type === 'money_request') {
-      return (
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.title}>{item.title}</Text>
-            <TouchableOpacity onPress={() => deleteNotification(item.id)}>
-              <Ionicons name="trash-outline" size={20} color="#d32f2f" />
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.body}>{item.body}</Text>
-          <View style={styles.buttons}>
-            <TouchableOpacity
-              style={styles.acceptBtn}
-              onPress={() => handleAcceptMoney(item)}
-            >
-              <Text style={styles.acceptText}>Gönder</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.rejectBtn}
-              onPress={() => handleRejectMoney(item)}
-            >
-              <Text style={styles.rejectText}>Reddet</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      );
-    }
-
+    const cardColor = item.read ? '#f2f4f8' : '#ffffff';
     return (
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: cardColor }]}>  
         <View style={styles.cardHeader}>
           <Text style={styles.title}>{item.title}</Text>
           <TouchableOpacity onPress={() => deleteNotification(item.id)}>
@@ -181,12 +119,31 @@ export default function NotificationsScreen({ navigation }) {
           </TouchableOpacity>
         </View>
         <Text style={styles.body}>{item.body}</Text>
-        <Text style={styles.time}>
-          {item.timestamp?.toDate().toLocaleString('tr-TR', {
-            day: '2-digit', month: '2-digit', year: 'numeric',
-            hour: '2-digit', minute: '2-digit'
-          })}
-        </Text>
+        {item.type !== 'transfer' && (
+          <View style={styles.buttons}>
+            {item.type === 'friend_request' && (
+              <>
+                <TouchableOpacity style={styles.acceptBtn} onPress={() => handleAcceptFriend(item)}>
+                  <Text style={styles.acceptText}>Kabul</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.rejectBtn} onPress={() => handleRejectFriend(item)}>
+                  <Text style={styles.rejectText}>Reddet</Text>
+                </TouchableOpacity>
+              </>
+            )}
+            {item.type === 'money_request' && (
+              <>
+                <TouchableOpacity style={styles.acceptBtn} onPress={() => handleAcceptMoney(item)}>
+                  <Text style={styles.acceptText}>Gönder</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.rejectBtn} onPress={() => handleRejectMoney(item)}>
+                  <Text style={styles.rejectText}>Reddet</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        )}
+        <Text style={styles.time}>{item.timestamp?.toDate().toLocaleString('tr-TR')}</Text>
       </View>
     );
   };
@@ -195,15 +152,15 @@ export default function NotificationsScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#1F2937" />
+          <Ionicons name="arrow-back" size={24} color="#3d5a80" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Bildirimler</Text>
         <View style={styles.headerActions}>
           <TouchableOpacity onPress={markAllAsRead} style={styles.headerBtn}>
-            <Ionicons name="checkmark-done-outline" size={24} color="#2c2c97" />
+            <Ionicons name="checkmark-done-outline" size={24} color="#3d5a80" />
           </TouchableOpacity>
           <TouchableOpacity onPress={clearAll} style={styles.headerBtn}>
-            <Text style={styles.clearAll}>Tümünü Temizle</Text>
+            <Text style={styles.clearAll}>Temizle</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -221,57 +178,23 @@ export default function NotificationsScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f2f2f2' },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 16
-  },
-  headerTitle: { flex:1, fontSize: 18, fontWeight: 'bold', color: '#333' },
+  container: { flex: 1, backgroundColor: '#f7fafd' },
+  header: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#eaf0f6', padding: 16, borderBottomColor: '#ddd', borderBottomWidth: 1 },
+  headerTitle: { flex: 1, fontSize: 20, fontWeight: 'bold', color: '#3d5a80' },
   headerActions: { flexDirection: 'row', alignItems: 'center' },
   headerBtn: { marginLeft: 16 },
   clearAll: { color: '#d32f2f', fontSize: 14 },
   list: { padding: 16 },
-  separator: { height: 8 },
-  emptyText: { textAlign: 'center', marginTop: 20, color: '#666' },
-
-  card: {
-    backgroundColor: 'white',
-    borderRadius: 8,
-    padding: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  },
+  separator: { height: 10 },
+  emptyText: { textAlign: 'center', marginTop: 30, color: '#666', fontSize: 16 },
+  card: { borderRadius: 10, padding: 16, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   title: { fontSize: 16, fontWeight: '600', color: '#333' },
-  body: { fontSize: 14, color: '#555', marginTop: 4 },
-  time: { fontSize: 12, color: '#999', marginTop: 6, textAlign: 'right' },
-
-  buttons: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: 10
-  },
-  acceptBtn: {
-    backgroundColor: '#4caf50',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-    marginRight: 8
-  },
+  body: { fontSize: 14, color: '#555', marginTop: 6 },
+  time: { fontSize: 12, color: '#999', marginTop: 10, textAlign: 'right' },
+  buttons: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 12 },
+  acceptBtn: { backgroundColor: '#4caf50', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 6, marginRight: 8 },
   acceptText: { color: '#fff', fontWeight: '600' },
-  rejectBtn: {
-    backgroundColor: '#f44336',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6
-  },
+  rejectBtn: { backgroundColor: '#f44336', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 6 },
   rejectText: { color: '#fff', fontWeight: '600' }
 });

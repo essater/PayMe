@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Image,
   ScrollView,
   SafeAreaView
 } from 'react-native';
@@ -48,7 +49,7 @@ export default function SignupScreen() {
     }
 
     if (password !== confirm) {
-      Toast.show({ type: 'error', text1: 'Şifreler eşleşmiyor.' });
+      Toast.show({ type: 'error', text1: 'Sşireler eşleşmiyor.' });
       return;
     }
 
@@ -88,7 +89,10 @@ export default function SignupScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-          <View style={styles.innerContainer}>
+          <View style={styles.card}>
+            <View style={styles.logoContainer}>
+              <Image source={require('../../assets/PayMe_Logo4.png')} style={styles.logo} />
+            </View>
             <Text style={styles.header}>Kayıt Ol</Text>
 
             <TextInput style={styles.input} placeholder="Ad" value={ad} onChangeText={setAd} />
@@ -130,7 +134,7 @@ export default function SignupScreen() {
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => navigation.navigate('Login')} style={{ marginTop: 15 }}>
+            <TouchableOpacity onPress={() => navigation.navigate('Login')} style={{ marginTop: 10 }}>
               <Text style={styles.linkText}>Hesabınız var mı? Giriş yapın.</Text>
             </TouchableOpacity>
           </View>
@@ -143,54 +147,72 @@ export default function SignupScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f2f2f2'
+    backgroundColor: '#3d5a80'
   },
   scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: 30,
-    backgroundColor: '#f2f2f2'
+    alignItems: 'center',
+    padding: 20,
   },
-  innerContainer: {
-    flex: 1,
-    justifyContent: 'center'
+  card: {
+    backgroundColor: '#fff',
+    padding: 25,
+    borderRadius: 16,
+    width: '90%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  logoContainer: {
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  logo: {
+    width: 500,
+    height: 200,
+    resizeMode: 'contain',
+    textAlign: 'center',
+    marginBottom: -50,
   },
   header: {
-    fontSize: 26,
+    fontSize: 24,
     textAlign: 'center',
-    marginBottom: 30,
+    marginBottom: 20,
     fontWeight: 'bold',
-    color: '#2c2c97'
+    color: '#3d5a80'
   },
   input: {
     height: 48,
-    borderColor: '#ccc',
+    borderColor: '#ddd',
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
-    backgroundColor: 'white',
-    marginBottom: 15
+    backgroundColor: '#f9f9f9',
+    marginBottom: 12
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderColor: '#ccc',
+    borderColor: '#ddd',
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
-    backgroundColor: 'white',
-    marginBottom: 15
+    backgroundColor: '#f9f9f9',
+    marginBottom: 16
   },
   inputPassword: {
     flex: 1,
     height: 48
   },
   button: {
-    backgroundColor: '#2c2c97',
+    backgroundColor: '#3d5a80',
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: 'center',
-    marginBottom: 20
+    marginBottom: 16
   },
   buttonText: {
     color: 'white',
@@ -198,7 +220,7 @@ const styles = StyleSheet.create({
     fontSize: 16
   },
   linkText: {
-    color: '#2c2c97',
+    color: 'Black',
     textAlign: 'center',
     fontSize: 14
   }

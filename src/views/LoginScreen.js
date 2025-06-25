@@ -8,7 +8,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -52,49 +53,53 @@ export default function LoginScreen({ navigation }) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
     >
-      <Text style={styles.title}>Giriş Yap</Text>
+      <View style={styles.card}>
+        <View style={styles.logoContainer}>
+          <Image source={require('../../assets/PayMe_Logo4.png')} style={styles.logo} />
+        </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="E-posta"
-        placeholderTextColor="#aaa"
-        autoCapitalize="none"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-      />
+        <Text style={styles.title}>Giriş Yap</Text>
 
-      <View style={styles.passwordContainer}>
         <TextInput
-          style={styles.inputPassword}
-          placeholder="Şifre"
-          placeholderTextColor="#aaa"
-          secureTextEntry={secureEntry}
-          value={password}
-          onChangeText={setPassword}
+          style={styles.input}
+          placeholder="E-posta"
+          placeholderTextColor="#999"
+          autoCapitalize="none"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
         />
-        <TouchableOpacity onPress={() => setSecureEntry(!secureEntry)}>
-          <Ionicons
-            name={secureEntry ? 'eye-off-outline' : 'eye-outline'}
-            size={24}
-            color="#666"
+
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={styles.inputPassword}
+            placeholder="Şifre"
+            placeholderTextColor="#999"
+            secureTextEntry={secureEntry}
+            value={password}
+            onChangeText={setPassword}
           />
+          <TouchableOpacity onPress={() => setSecureEntry(!secureEntry)}>
+            <Ionicons
+              name={secureEntry ? 'eye-off-outline' : 'eye-outline'}
+              size={24}
+              color="#666"
+            />
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity onPress={handleLogin} style={styles.button}>
+          <Text style={styles.buttonText}>Giriş</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+          <Text style={styles.linkText}>Şifremi Unuttum</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+          <Text style={[styles.linkText, { marginTop: 8 }]}>Hesabınız yok mu? Hesap Oluştur</Text>
         </TouchableOpacity>
       </View>
-
-      <TouchableOpacity onPress={handleLogin} style={styles.button}>
-        <Text style={styles.buttonText}>Giriş Yap</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
-        <Text style={styles.linkText}>Şifrenizi mi unuttunuz?</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-        <Text style={[styles.linkText, { marginTop: 12 }]}>
-          Hesabınız yok mu? Kayıt olun.
-        </Text>
-      </TouchableOpacity>
     </KeyboardAvoidingView>
   );
 }
@@ -102,55 +107,77 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f2f2f2',
     justifyContent: 'center',
-    paddingHorizontal: 30
+    alignItems: 'center',
+    backgroundColor: '#3d5a80',
+  },
+  logoContainer: {
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  logo: {
+    width: 500,
+    height: 200,
+    resizeMode: 'contain',
+    textAlign: 'center',
+    marginBottom: -50,
+  },
+  card: {
+    backgroundColor: '#fff',
+    padding: 25,
+    borderRadius: 16,
+    width: '85%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
   },
   title: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#2c2c97',
-    marginBottom: 30,
-    textAlign: 'center'
+    color: '#3d5a80',
+    textAlign: 'center',
+    marginBottom: 20,
   },
   input: {
     height: 48,
-    borderColor: '#ccc',
+    borderColor: '#ddd',
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
-    backgroundColor: 'white',
-    marginBottom: 15
+    backgroundColor: '#f9f9f9',
+    marginBottom: 12,
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderColor: '#ccc',
+    borderColor: '#ddd',
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
-    backgroundColor: 'white',
-    marginBottom: 20
+    backgroundColor: '#f9f9f9',
+    marginBottom: 16,
   },
   inputPassword: {
     flex: 1,
-    height: 48
+    height: 48,
   },
   button: {
-    backgroundColor: '#2c2c97',
+    backgroundColor: '#3d5a80',
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: 'center',
-    marginBottom: 20
+    marginBottom: 16,
   },
   buttonText: {
     color: 'white',
     fontWeight: 'bold',
-    fontSize: 16
+    fontSize: 16,
   },
   linkText: {
-    color: '#2c2c97',
+    color: 'Black',
     textAlign: 'center',
-    fontSize: 14
-  }
+    fontSize: 14,
+  },
 });
