@@ -6,7 +6,15 @@ Bu proje, bitirme projem olarak geliştirilmiş olup, React Native ve Firebase t
 Amaç, gerçek bir mobil ödeme altyapısının kullanıcı deneyimine dayalı bir simülasyonunu gerçekleştirmektir.
 
 🖼️ Uygulama Görselleri
-<p align="center"> <img src="screens/login.jpg" width="230" /> <img src="screens/register.jpg" width="230" /> <img src="screens/home.jpg" width="230" /> </p> <p align="center"> <img src="screens/transactions.jpg" width="230" /> <img src="screens/qrscan.jpg" width="230" /> <img src="screens/qrmycode.jpg" width="230" /> </p>
+<p align="center"> !![3633bd16-6d2a-4103-9709-bd6febdaf1a4](https://github.com/user-attachments/assets/124dc58b-9a35-4205-8f10-382bad3b0f55)
+[8eefd8f4-![bd4d847c-12d4-4507-be66-e8ae3a9553c6](https:![4eaca6d8-fc94-4a9f-92f1-3236ee005439](https://github.com/user-attachments/assets/17109580-3f97-493e-a128-66a44aa9ad![a456715a-f88d-4ed9-9d6a-fd596088736a](https://github.com/user-attachments/assets/8414a31e-0462-4e0e-a34d-39a2451![d3995cf4-d60d-417f-9e05-82646d58adf9](https://github.com/user-attachments/assets/facc45cc-a232-401e-a6e2-fc80b9db5f95)
+f4e25![8672ceb3-f308-4ab8-b6f9-334c7d011dfc](https://github.com/user-attachments/assets/c85eedd3-affe-4f2a-8b28-744ec2dda18b)
+)
+38)![8057cbb1-c63c-4c1f-a348-14b738a1b0cd](https://github.com/user-attachments/assets/0b12e367-6f55-4f67-952b-4d5e83d5c5c3)
+
+//github.com/user-attachments/assets/94fdeaa6-424e-48df-8ec3-17db4cded9e4)
+58fc-4f91-bb37-e7e42b154b27](https://github.com/user-attachments/assets/dcddae05-2eec-4d50-9faf-323f89d456d9)
+ </p>
 
 💡 Görseller: Giriş, kayıt, ana sayfa, QR ödeme ve işlem geçmişi ekranları.
 
@@ -94,9 +102,8 @@ Profil fotoğrafı ve kişiselleştirme
 
 👨‍💻 Geliştirici
 
-İsmail Es Satır
+İsmail Esat Erbay
 🎓 Bitirme Projesi | Frontend & Mobile Developer
-📬 GitHub Profilim
 
 🏷️ Lisans
 
